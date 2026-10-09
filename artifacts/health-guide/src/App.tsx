@@ -14,7 +14,6 @@ const navItems = [
   { label: 'Articles', href: '/articles' },
   { label: 'Conditions', href: '/conditions' },
   { label: 'Medications', href: '/medications' },
-  { label: 'PulseCare', href: '/pulsecare' },
   { label: 'Resources', href: '/resources' },
   { label: 'Vaccines', href: '/vaccines' },
   { label: 'GoodRx', href: '/goodrx' },
@@ -120,7 +119,7 @@ function Footer() {
   return <footer className="footer">
     <div className="shell footer-inner">
       <div><div className="brand" style={{ fontSize: 15 }}><span className="brand-mark" style={{ width: 28, height: 28 }}><HeartPulse size={15} /></span><span>health guide</span></div><p style={{ margin: '9px 0 0' }}>Clear answers. Credible sources. No diagnosis.</p></div>
-      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/pulsecare">PulseCare</Link><Link href="/resources">Resources</Link><Link href="/vaccines">Vaccines</Link><Link href="/goodrx">GoodRx</Link><Link href="/sources">Sources</Link></div>
+      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/resources">Resources</Link><Link href="/vaccines">Vaccines</Link><Link href="/goodrx">GoodRx</Link><Link href="/sources">Sources</Link></div>
       <span>Editorial source check: October 2026</span>
     </div>
   </footer>;

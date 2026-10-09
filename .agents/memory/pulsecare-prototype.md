@@ -3,7 +3,11 @@ name: PulseCare prototype scope
 description: Integration and safety boundaries for the user's supplied healthcare portal code.
 ---
 
-PulseCare is a separate tab within Health Guide, preserving the user's supplied portal design as an educational prototype. Booking, payment, refill, patient-record, and telehealth examples are not connected services.
+The user removed the PulseCare tab from Health Guide navigation. Do not reintroduce it unless requested. The retained supplied portal remains an educational prototype; booking, payment, refill, patient-record, and telehealth examples are not connected services.
+
+**Why:** The user explicitly requested removal of the PulseCare tab after its earlier integration.
+
+**How to apply:** Keep it out of desktop and mobile navigation and footer links. Tab removal does not authorize deleting the supplied prototype assets.
 
 **Why:** The supplied code contained hardcoded patient/provider data and alerts falsely confirming transactions. It also identified every pill as one medicine, cleared unknown drug interactions, and labeled a partial questionnaire as validated screening.
 
