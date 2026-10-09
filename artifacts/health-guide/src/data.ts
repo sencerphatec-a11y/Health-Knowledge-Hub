@@ -1,3 +1,5 @@
+import { conditionEntries, conditionSources } from './data/conditions';
+
 export type Kind = 'Article' | 'Condition' | 'Medication';
 
 export interface Source {
@@ -16,10 +18,16 @@ export interface LibraryEntry {
   summary: string;
   checked: string;
   sourceIds: string[];
-  sections: { heading: string; paragraphs: string[]; points?: string[] }[];
+  sections: {
+    heading: string;
+    paragraphs: string[];
+    points?: string[];
+    blocks?: ({ kind: string; text?: string; items?: string[]; headers?: string[]; rows?: string[][] })[];
+  }[];
 }
 
 export const sources: Source[] = [
+  ...conditionSources,
   { id: 'med-hbp', title: 'High Blood Pressure', organization: 'MedlinePlus', url: 'https://medlineplus.gov/highbloodpressure.html', description: 'Overview of high blood pressure, measurement, and care.' },
   { id: 'med-asthma', title: 'Asthma', organization: 'MedlinePlus', url: 'https://medlineplus.gov/asthma.html', description: 'Information about asthma symptoms, causes, and management.' },
   { id: 'med-t2d', title: 'Type 2 Diabetes', organization: 'MedlinePlus', url: 'https://medlineplus.gov/diabetestype2.html', description: 'Plain-language reference on type 2 diabetes.' },
@@ -32,6 +40,7 @@ export const sources: Source[] = [
 ];
 
 export const entries: LibraryEntry[] = [
+  ...conditionEntries,
   {
     id: 'blood-pressure-readings', kind: 'Article', title: 'How blood pressure readings are understood', category: 'Heart health',
     summary: 'A blood pressure reading is a pair of measurements taken at a particular moment. Understanding what it may mean depends on how it was measured and the person’s overall health.',
@@ -60,36 +69,6 @@ export const entries: LibraryEntry[] = [
       { heading: 'Start with the purpose', paragraphs: ['The label identifies active ingredients and the symptoms or uses the product is intended for. Compare active ingredients when considering more than one product.'] },
       { heading: 'Read warnings and directions', paragraphs: ['Warnings can explain when to avoid a product or seek advice. Directions describe the labeled use; never exceed label instructions. The package label is specific to that product.'] },
       { heading: 'Get help with uncertainty', paragraphs: ['Ask a pharmacist or clinician to help interpret a label, especially if you use other medicines or have health conditions. This guide is not a substitute for product labeling.'] },
-    ],
-  },
-  {
-    id: 'high-blood-pressure', kind: 'Condition', title: 'High blood pressure', category: 'Heart health',
-    summary: 'High blood pressure often has no obvious symptoms. It is identified through properly taken measurements and clinical interpretation, not by how someone feels.',
-    checked: 'October 2026', sourceIds: ['med-hbp'],
-    sections: [
-      { heading: 'What it means', paragraphs: ['Blood pressure describes the force of blood against artery walls. A pattern of readings above a healthy range can place extra strain on the heart and blood vessels over time.'] },
-      { heading: 'Often quiet, still worth checking', paragraphs: ['Many people do not notice symptoms. A properly sized cuff and correct measurement technique matter; a clinician considers repeated readings and individual circumstances.'] },
-      { heading: 'Understanding next steps', paragraphs: ['If you have a reading that concerns you, discuss it with a health professional. Evaluation and care are personal; do not diagnose or adjust treatment based on this page alone.'] },
-    ],
-  },
-  {
-    id: 'asthma', kind: 'Condition', title: 'Asthma', category: 'Breathing',
-    summary: 'Asthma involves inflammation and narrowing of the airways. It can cause wheezing, coughing, chest tightness, or shortness of breath, and experiences vary.',
-    checked: 'October 2026', sourceIds: ['med-asthma'],
-    sections: [
-      { heading: 'What happens in the airways', paragraphs: ['With asthma, airway inflammation and tightening can make it harder for air to move. Symptoms may come and go and can be triggered by different things.'] },
-      { heading: 'Symptoms and evaluation', paragraphs: ['Common symptoms include wheeze, cough, chest tightness, and breathlessness. A clinician uses a person’s history and appropriate tests to evaluate symptoms.'] },
-      { heading: 'A personal care plan', paragraphs: ['Treatment and an action plan should be discussed with a clinician. Seek urgent help for severe breathing difficulty or rapidly worsening symptoms.'] },
-    ],
-  },
-  {
-    id: 'type-2-diabetes', kind: 'Condition', title: 'Type 2 diabetes', category: 'Metabolic health',
-    summary: 'Type 2 diabetes is a chronic condition involving elevated blood glucose. Evaluation and treatment are individualized with a health professional.',
-    checked: 'October 2026', sourceIds: ['med-t2d'],
-    sections: [
-      { heading: 'A condition involving blood glucose', paragraphs: ['The body may not use insulin effectively and may not make enough insulin to keep blood glucose in a healthy range. Each person’s experience can differ.'] },
-      { heading: 'Testing and interpretation', paragraphs: ['A clinician uses appropriate tests and health history to evaluate blood glucose. Symptoms alone cannot confirm or rule out diabetes.'] },
-      { heading: 'Care is individual', paragraphs: ['Ongoing care may involve several approaches chosen with a care team. Discuss questions and treatment decisions with your clinician; this summary is not a treatment plan.'] },
     ],
   },
   {

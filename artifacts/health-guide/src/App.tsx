@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
 import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
+import PulseCarePage from './pages/PulseCarePage';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
 
 const navItems = [
   { label: 'Articles', href: '/articles' },
   { label: 'Conditions', href: '/conditions' },
   { label: 'Medications', href: '/medications' },
+  { label: 'PulseCare', href: '/pulsecare' },
   { label: 'Sources', href: '/sources' },
 ];
 const collectionFor = (kind: Kind) => kind === 'Article' ? 'articles' : kind === 'Condition' ? 'conditions' : 'medications';
@@ -35,13 +37,16 @@ function usePageMetadata() {
       description = 'Read clear explainers about common health questions, medication labels, and public health topics. Every article links to its original sources.';
     } else if (pathname === '/conditions') {
       title = 'Condition library: clear health guides | Health Guide';
-      description = 'Explore plain-language guides to common health conditions, with trusted sources and reminders to discuss personal concerns with a clinician.';
+      description = 'Explore 50 curated, alphabetical guides to common conditions that touch daily American life, with trusted sources and reminders to discuss personal concerns with a clinician.';
     } else if (pathname === '/medications') {
       title = 'Medication guides & medicine safety | Health Guide';
       description = 'Search current U.S. human medication and biologic product labels, read labeled uses, and follow direct DailyMed citations.';
     } else if (pathname.startsWith('/medications/')) {
       title = 'Medication label and labeled uses | Health Guide';
       description = 'Read the product-specific labeled uses and find the complete original DailyMed label, warnings, and directions.';
+    } else if (pathname === '/pulsecare') {
+      title = 'PulseCare patient portal prototype | Health Guide';
+      description = 'Explore PulseCare, an educational patient portal prototype with sample data. Appointments, refills, payments, and telehealth are not live.';
     } else if (pathname === '/sources') {
       title = 'Health Guide sources & citations | MedlinePlus, CDC, FDA';
       description = 'See the original public-health and medicine sources behind Health Guide articles, condition pages, and medication guides.';
@@ -96,7 +101,7 @@ function Footer() {
   return <footer className="footer">
     <div className="shell footer-inner">
       <div><div className="brand" style={{ fontSize: 15 }}><span className="brand-mark" style={{ width: 28, height: 28 }}><HeartPulse size={15} /></span><span>health guide</span></div><p style={{ margin: '9px 0 0' }}>Clear answers. Credible sources. No diagnosis.</p></div>
-      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/sources">Sources</Link></div>
+      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/pulsecare">PulseCare</Link><Link href="/sources">Sources</Link></div>
       <span>Editorial source check: October 2026</span>
     </div>
   </footer>;
@@ -114,7 +119,7 @@ function SearchField({ initial = '', onSearch, home = false }: { initial?: strin
   return <form className={home ? 'search-panel' : 'library-search'} onSubmit={submit} role="search">
     <Search size={19} aria-hidden="true" />
     <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={home ? 'Search a topic, symptom, or medicine' : 'Search titles and summaries'} aria-label="Search health information" data-testid={home ? 'input-home-search' : 'input-library-search'} />
-    <button className={home ? 'search-submit' : 'sr-only'} type="submit" data-testid={home ? 'button-home-search' : 'button-library-search'}>{home ? 'Search library' : 'Search'}</button>
+    <button className={home ? 'search-submit' : 'library-search-submit'} type="submit" data-testid={home ? 'button-home-search' : 'button-library-search'}>{home ? 'Search library' : 'Search'}</button>
   </form>;
 }
 
@@ -143,7 +148,7 @@ function Home() {
       <div className="section-head"><div><div className="eyebrow">Start with a topic</div><h2 className="serif">A useful place to begin.</h2></div><p>Explore our library of common conditions, medicines, and the questions people ask about them.</p></div>
       <div className="topic-grid">
         {[
-          { href: '/conditions', icon: <HeartPulse size={18} />, count: '03 guides', title: 'Conditions', copy: 'Plain-language introductions to common health conditions.' },
+          { href: '/conditions', icon: <HeartPulse size={18} />, count: `${entries.filter((e) => e.kind === 'Condition').length} condition guides`, title: 'Conditions', copy: 'Plain-language introductions to common health conditions.' },
           { href: '/medications', icon: <Pill size={18} />, count: 'DailyMed catalog', title: 'Medications', copy: 'Search current product labels and read their original safety information.' },
           { href: '/articles', icon: <BookOpen size={18} />, count: '03 explainers', title: 'Articles', copy: 'Helpful context for readings, labels, and everyday questions.' },
         ].map((topic) => <Link key={topic.href} href={topic.href} className="topic-card" data-testid={`card-topic-${topic.title.toLowerCase()}`}>
@@ -185,9 +190,9 @@ function Library({ kind }: { kind: Kind }) {
   const [, setLocation] = useLocation();
   const params = new URLSearchParams(useSearch());
   const initialQuery = params.get('q') || '';
-  const [query, setQuery] = useState(initialQuery);
+  const query = initialQuery;
   const [filter, setFilter] = useState('All topics');
-  const baseEntries = useMemo(() => entries.filter((entry) => entry.kind === kind), [kind]);
+  const baseEntries = useMemo(() => entries.filter((entry) => entry.kind === kind).sort((a, b) => a.title.localeCompare(b.title)), [kind]);
   const categories = ['All topics', ...Array.from(new Set(baseEntries.map((entry) => entry.category)))];
   const filtered = baseEntries.filter((entry) => {
     const matchesQuery = `${entry.title} ${entry.summary} ${entry.category}`.toLowerCase().includes(query.toLowerCase());
@@ -202,11 +207,12 @@ function Library({ kind }: { kind: Kind }) {
   return <main className="shell">
     <div className="page-heading animate-arrive"><div className="eyebrow">The library / {collectionName}</div><h1 className="serif">{collectionName}, made clearer.</h1><p>{description}</p></div>
     <div className="library-controls">
-      <SearchField initial={initialQuery} onSearch={(value) => { setQuery(value); setLocation(value ? `/${collectionFor(kind)}?q=${encodeURIComponent(value)}` : `/${collectionFor(kind)}`); }} />
+      <SearchField key={initialQuery} initial={initialQuery} onSearch={(value) => { setLocation(value ? `/${collectionFor(kind)}?q=${encodeURIComponent(value)}` : `/${collectionFor(kind)}`); }} />
       {categories.map((category) => <button key={category} type="button" className={`filter-chip${filter === category ? ' active' : ''}`} onClick={() => setFilter(category)} aria-pressed={filter === category} data-testid={`filter-${category.toLowerCase().replaceAll(' ', '-')}`}>{category}</button>)}
     </div>
+    {kind === 'Condition' && <p className="catalog-note" data-testid="text-conditions-note">A curated set of common conditions, listed alphabetically. This is not an official numerical prevalence ranking.</p>}
     <p className="result-count" aria-live="polite" data-testid="text-result-count">{filtered.length} {filtered.length === 1 ? 'guide' : 'guides'} in this collection</p>
-    {filtered.length ? <div className="listing-grid">{filtered.map((entry) => <EntryCard key={entry.id} entry={entry} />)}</div> : <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>No guides found</h2><p>Try another word or choose a different topic.</p><button className="button-primary" onClick={() => { setQuery(''); setFilter('All topics'); setLocation(`/${collectionFor(kind)}`); }}>Clear search and filters</button></div>}
+    {filtered.length ? <div className="listing-grid">{filtered.map((entry) => <EntryCard key={entry.id} entry={entry} />)}</div> : <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>No guides found</h2><p>Try another word or choose a different topic.</p><button className="button-primary" onClick={() => { setFilter('All topics'); setLocation(`/${collectionFor(kind)}`); }}>Clear search and filters</button></div>}
     <div style={{ paddingBottom: 50 }}><Disclaimer /></div>
     <Footer />
   </main>;
@@ -373,8 +379,17 @@ function Detail({ collection, id }: { collection: string; id: string }) {
         <div className="key-callout"><strong>In brief</strong><br />This guide is for general education. Personal symptoms, test results, and medicine choices need individual advice from a qualified health professional.</div>
         {entry.sections.map((section) => <section key={section.heading}>
           <h2>{section.heading}</h2>
-          {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          {section.points && <ul>{section.points.map((point) => <li key={point}>{point}</li>)}</ul>}
+          {section.blocks ? section.blocks.map((block, index) => block.kind === 'list'
+            ? <ul key={index}>{block.items?.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ul>
+            : block.kind === 'table'
+              ? <div className="condition-table-scroll" key={index}><table>
+                <thead><tr>{block.headers?.map((header, column) => <th scope="col" key={column}>{header}</th>)}</tr></thead>
+                <tbody>{block.rows?.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, column) => <td key={column}>{cell}</td>)}</tr>)}</tbody>
+              </table></div>
+              : <p key={index}>{block.text}</p>) : <>
+            {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            {section.points && <ul>{section.points.map((point) => <li key={point}>{point}</li>)}</ul>}
+          </>}
         </section>)}
         <section><h2>When to seek help</h2><p>For personal questions, contact a clinician or pharmacist. If symptoms may be urgent or life-threatening, contact your local emergency services now.</p></section>
         <Disclaimer />
@@ -475,6 +490,7 @@ function App() {
       <Route path="/conditions" component={() => <Library kind="Condition" />} />
       <Route path="/medications" component={MedicationCatalog} />
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
+      <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
       <Route path="/sources" component={SourcesPage} />
       <Route path="/search" component={SearchResults} />
       <Route path="/:collection/:id">{(params) => <Detail collection={params.collection} id={params.id} />}</Route>

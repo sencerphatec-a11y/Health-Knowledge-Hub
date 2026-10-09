@@ -1,1 +1,3 @@
 - [Medication catalog scope](medication-catalog.md) — use current human finished-product labels, including biologics; separate labeled claims from approval and evidence.
+- [Condition sourcing](condition-sourcing.md) — curated U.S. everyday-health coverage is not a prevalence ranking; preserve complete source structure.
+- [PulseCare prototype scope](pulsecare-prototype.md) — the supplied portal is a separate educational tab, not connected healthcare services or validated clinical tools.
