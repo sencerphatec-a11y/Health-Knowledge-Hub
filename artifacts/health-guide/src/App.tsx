@@ -313,6 +313,14 @@ function MedicationCatalog() {
   }), [initialQuery, page]);
   const catalog = useGetMedicationLabels(params);
   useEffect(() => { setSearchValue(initialQuery); }, [initialQuery]);
+  useEffect(() => {
+    if (catalog.data && catalog.data.page !== page) {
+      const search = new URLSearchParams();
+      if (initialQuery.trim()) search.set('q', initialQuery.trim());
+      if (catalog.data.page > 1) search.set('page', String(catalog.data.page));
+      setLocation(`/medications${search.size ? `?${search.toString()}` : ''}`, { replace: true });
+    }
+  }, [catalog.data, page, initialQuery, setLocation]);
 
   const goTo = (nextQuery: string, nextPage: number) => {
     const search = new URLSearchParams();
@@ -340,8 +348,9 @@ function MedicationCatalog() {
     {catalog.isLoading ? <section className="catalog-results" aria-label="Loading medication labels" aria-busy="true">
       <div className="skeleton-line" /><div className="label-skeletons">{[1, 2, 3, 4, 5, 6].map((item) => <div className="label-skeleton" key={item}><i /><b /><span /></div>)}</div>
     </section> : catalog.isError ? <div className="catalog-state catalog-error" role="alert">
-      <h2>Labels are not available right now.</h2><p>We could not reach the current DailyMed catalog. Please try again.</p>
+      <h2>Labels could not be loaded.</h2><p>{catalog.error.message || 'We could not reach the current DailyMed catalog. Please try again.'}</p>
       <button type="button" className="button-primary" onClick={() => catalog.refetch()} data-testid="button-retry-medication-catalog">Try again <ArrowRight size={14} /></button>
+      <button type="button" className="text-link" onClick={() => goTo('', 1)} style={{ marginTop: 16 }}>Return to the catalog <ArrowRight size={14} /></button>
     </div> : results ? <>
       <div className="catalog-summary" aria-live="polite" data-testid="text-medication-catalog-summary">
         <p>{results.query ? <>Results for <strong>“{results.query}”</strong></> : <>Current U.S. human drug-label catalog</>}</p>
@@ -361,6 +370,7 @@ function MedicationCatalog() {
       </nav>}
       <div className="catalog-updated"><CalendarDays size={14} /> Catalog last updated {formatDate(results.catalogUpdatedAt)} · Records from <a href="https://dailymed.nlm.nih.gov/dailymed/" target="_blank" rel="noreferrer">DailyMed <ExternalLink size={11} /></a></div>
     </> : null}
+    <section className="section" aria-label="Authored medication guides"><h2 className="serif">Everyday medication guides</h2><p className="source-note">Our plain-language guides are separate from the product-specific label catalog.</p><div className="listing-grid">{entries.filter(entry => entry.kind === 'Medication').map(entry => <EntryCard key={entry.id} entry={entry} />)}</div></section>
     <div className="catalog-disclaimer"><Disclaimer /></div>
     <Footer />
   </main>;
@@ -395,7 +405,7 @@ function MedicationLabelDetailPage({ setId }: { setId: string }) {
 
   if (labelQuery.isLoading) return <main className="shell medication-detail"><div className="detail-top"><div className="skeleton-line short" /><div className="skeleton-heading" /><div className="skeleton-line" /></div><div className="detail-layout"><article className="reading-content"><div className="label-detail-skeleton" /><div className="label-detail-skeleton" /></article></div></main>;
   if (labelQuery.isError || !label) return <main className="shell medication-detail">
-    <div className="catalog-state detail-error" role="alert"><Pill size={25} /><h1 className="serif">This label could not be opened.</h1><p>It may no longer be in the catalog, or the service may be temporarily unavailable.</p><button type="button" className="button-primary" onClick={() => labelQuery.refetch()} data-testid="button-retry-medication-label">Try again <ArrowRight size={14} /></button><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Back to medication labels</Link></div><Footer />
+    <div className="catalog-state detail-error" role="alert"><Pill size={25} /><h1 className="serif">This label could not be opened.</h1><p>{labelQuery.error?.message || 'It may no longer be in the catalog, or the service may be temporarily unavailable.'}</p><button type="button" className="button-primary" onClick={() => labelQuery.refetch()} data-testid="button-retry-medication-label">Try again <ArrowRight size={14} /></button><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Back to medication labels</Link></div><Footer />
   </main>;
 
   return <main className="shell medication-detail">

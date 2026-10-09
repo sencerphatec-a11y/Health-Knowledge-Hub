@@ -14,5 +14,5 @@ export interface MedicationCatalogPage {
   pageSize: number;
   totalItems: number;
   totalPages: number;
-  catalogUpdatedAt: string;
+  catalogUpdatedAt: Date;
 }

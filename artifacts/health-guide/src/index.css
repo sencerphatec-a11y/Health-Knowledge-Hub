@@ -219,6 +219,10 @@ a { color: inherit; text-decoration: none; }
 .skeleton-heading { width:min(70%,580px);height:60px;margin:28px 0 18px; }
 .label-detail-skeleton { height:165px;margin-bottom:22px; }
 .medication-detail { min-height:100dvh; }.medication-detail .detail-top { padding-top:44px; }
+.medication-detail .detail-hero h1 { overflow-wrap:anywhere; }
+.medication-detail .detail-meta { flex-wrap:wrap; }
+.medication-catalog > .section { padding-bottom:0; }
+.medication-catalog > .section .listing-grid { margin-bottom:0; }
 .medication-uses .uses-copy { white-space:pre-wrap;color:#5c6d64;font-size:14px;line-height:1.85; }
 .uses-unavailable { padding:15px 17px;border-left:2px solid #bd7652;background:#f0e9dc;color:#596b61;font-size:13px;line-height:1.75; }
 .uses-unavailable p { margin:0 0 9px; }.uses-unavailable p:last-child { margin-bottom:0; }

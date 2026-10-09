@@ -71,12 +71,13 @@ export const HealthCheckResponse = zod.object({
 export const getMedicationLabelsQueryQueryMax = 100;
 
 export const getMedicationLabelsQueryPageDefault = 1;
+export const getMedicationLabelsQueryPageMax = 100000;
 
 
 
 export const GetMedicationLabelsQueryParams = zod.object({
   "query": zod.coerce.string().min(1).max(getMedicationLabelsQueryQueryMax).optional().describe('Search by a generic or brand medication name.'),
-  "page": zod.coerce.number().int().min(1).default(getMedicationLabelsQueryPageDefault)
+  "page": zod.coerce.number().int().min(1).max(getMedicationLabelsQueryPageMax).default(getMedicationLabelsQueryPageDefault)
 })
 
 export const GetMedicationLabelsResponse = zod.object({
@@ -92,7 +93,7 @@ export const GetMedicationLabelsResponse = zod.object({
   "pageSize": zod.number().int(),
   "totalItems": zod.number().int(),
   "totalPages": zod.number().int(),
-  "catalogUpdatedAt": zod.string()
+  "catalogUpdatedAt": zod.coerce.date()
 })
 
 

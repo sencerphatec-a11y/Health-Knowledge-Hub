@@ -108,6 +108,7 @@ paths:
           schema:
             type: integer
             minimum: 1
+            maximum: 100000
             default: 1
       responses:
         "200":
@@ -116,6 +117,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MedicationCatalogPage"
+        "400":
+          description: Invalid search query or page number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "502":
           description: DailyMed is unavailable or returned an invalid response
           content:
@@ -266,6 +273,7 @@ components:
           type: integer
         catalogUpdatedAt:
           type: string
+          format: date-time
       required: [items, query, page, pageSize, totalItems, totalPages, catalogUpdatedAt]
     MedicationLabelDetail:
       allOf:

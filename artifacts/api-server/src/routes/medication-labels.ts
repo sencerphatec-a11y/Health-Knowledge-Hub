@@ -66,6 +66,9 @@ async function fetchDailyMed(url: URL): Promise<Response> {
 }
 
 function readPositiveInteger(value: string | number | undefined): number {
+  if ((typeof value !== "string" && typeof value !== "number") || value === "") {
+    throw new DailyMedError(502, "DailyMed returned incomplete catalog information.");
+  }
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0) {
     throw new DailyMedError(502, "DailyMed returned incomplete catalog information.");
@@ -101,8 +104,15 @@ async function loadDailyMedPage(url: URL): Promise<DailyMedPage> {
     throw new DailyMedError(502, "DailyMed returned an unreadable catalog response.");
   }
 
-  if (!Array.isArray(page.data) || !page.metadata) {
+  if (!page || !Array.isArray(page.data) || !page.metadata) {
     throw new DailyMedError(502, "DailyMed returned an incomplete catalog response.");
+  }
+  const count = readPositiveInteger(page.metadata.total_elements);
+  const pages = readPositiveInteger(page.metadata.total_pages);
+  if (pages !== Math.ceil(count / Number(url.searchParams.get("pagesize") || 20)) ||
+      page.data.some((entry) => !entry || typeof entry.setid !== "string" ||
+        typeof entry.title !== "string" || typeof entry.published_date !== "string")) {
+    throw new DailyMedError(502, "DailyMed returned invalid catalog information.");
   }
   return page;
 }
@@ -196,12 +206,18 @@ router.get("/medication-labels", async (req, res) => {
       remaining -= take;
       offset = 0;
     }
-    const catalogUpdatedAt = categories.find((category) =>
+    const catalogTimestamp = categories.find((category) =>
       category.firstPage.metadata?.db_published_date,
     )?.firstPage.metadata?.db_published_date;
-    if (!catalogUpdatedAt) {
+    // DailyMed's timestamp ("Oct 08, 2026 08:01:43PM EST") needs a
+    // space before the meridiem to be parsed consistently by consumers.
+    const catalogDate = catalogTimestamp
+      ? new Date(catalogTimestamp.replace(/(\d)(AM|PM)\b/i, "$1 $2"))
+      : new Date(NaN);
+    if (Number.isNaN(catalogDate.getTime())) {
       throw new DailyMedError(502, "DailyMed did not include its catalog update date.");
     }
+    const catalogUpdatedAt = catalogDate.toISOString();
 
     return res.json(GetMedicationLabelsResponse.parse({
       items,
@@ -267,22 +283,29 @@ function decodeXmlEntities(value: string): string {
     );
 }
 
-function sectionText(xml: string): string | null {
-  const indicationCode = /<code\b[^>]*\bcode=["']34067-9["'][^>]*>/i.exec(xml);
-  if (!indicationCode) return null;
-
-  const sectionStart = xml.lastIndexOf("<section", indicationCode.index);
-  if (sectionStart < 0) return null;
-  const section = extractElement(xml, sectionStart, "section");
-  if (!section) return null;
-
+export function sectionText(xml: string): string | null {
   // SPL highlights repeat abbreviated uses in an excerpt. Keep the full label
   // text and nested indication sections instead of duplicating that summary.
-  const fullSection = section.replace(/<excerpt\b[^>]*>[\s\S]*?<\/excerpt>/gi, "");
-  if (!/<text\b/i.test(fullSection)) return null;
+  const fullLabel = xml.replace(/<excerpt\b[^>]*>[\s\S]*?<\/excerpt>/gi, "");
+  const sections: string[] = [];
+  let previousEnd = -1;
+  // Some multi-product labels have separate sibling uses sections. Include all
+  // of them, but do not repeat a subsection already covered by its parent.
+  for (const indicationCode of fullLabel.matchAll(/<code\b[^>]*\bcode=["']34067-9["'][^>]*>/gi)) {
+    if (indicationCode.index < previousEnd) continue;
+    const sectionStart = fullLabel.lastIndexOf("<section", indicationCode.index);
+    if (sectionStart < 0) continue;
+    const section = extractElement(fullLabel, sectionStart, "section");
+    if (!section) continue;
+    previousEnd = sectionStart + section.length;
+    if (/<text\b/i.test(section)) sections.push(section);
+  }
+  const fullSection = sections.map(section =>
+    section.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, ""),
+  ).join("\n");
+  if (!fullSection) return null;
   // Include all nested indication subsections, not only the first text block.
   const plainText = fullSection
-    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, "")
     .replace(/\s+/g, " ")
     .replace(/<(?:br|\/?paragraph|\/?list|\/?item|\/?tr|\/?table|\/?title|\/?caption)\b[^>]*\/?>/gi, "\n")
     .replace(/<\/?(?:td|th)\b[^>]*>/gi, " | ")
@@ -295,7 +318,7 @@ function sectionText(xml: string): string | null {
   return plainText || null;
 }
 
-function formatEffectiveDate(xml: string): string | null {
+export function formatEffectiveDate(xml: string): string | null {
   const match = /<effectiveTime\b[^>]*\bvalue=["'](\d{8})["'][^>]*\/?>/i.exec(xml);
   if (!match) return null;
   return `${match[1].slice(0, 4)}-${match[1].slice(4, 6)}-${match[1].slice(6, 8)}`;
@@ -332,7 +355,8 @@ router.get("/medication-labels/:setId", async (req, res) => {
       | undefined;
     const labelType: LabelType | undefined = typeCode ? HUMAN_LABEL_TYPES[typeCode] : undefined;
     const metadata = metadataPage.data?.[0];
-    if (!labelType || !metadata?.title || !metadata.published_date) {
+    if (!labelType || metadata?.setid?.toLowerCase() !== setId.toLowerCase() ||
+        !metadata.title || !metadata.published_date) {
       return res.status(404).json({ message: "This human medication label could not be found." });
     }
 

@@ -128,6 +128,7 @@ export type GetMedicationLabelsParams = {
 query?: string;
 /**
  * @minimum 1
+ * @maximum 100000
  */
 page?: number;
 };
