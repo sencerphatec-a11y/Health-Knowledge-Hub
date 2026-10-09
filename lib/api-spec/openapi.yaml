@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: medications
+    description: Current U.S. human medication labels from DailyMed
 paths:
   /healthz:
     get:
@@ -24,6 +26,72 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /medication-labels:
+    get:
+      operationId: getMedicationLabels
+      tags: [medications]
+      summary: Search current U.S. human drug labels
+      description: Returns paginated DailyMed prescription and OTC label records.
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: Search by a generic or brand medication name.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Medication label results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationCatalogPage"
+        "502":
+          description: DailyMed is unavailable or returned an invalid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /medication-labels/{setId}:
+    get:
+      operationId: getMedicationLabel
+      tags: [medications]
+      summary: Get a medication label's labeled uses
+      parameters:
+        - name: setId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Medication label and labeled uses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationLabelDetail"
+        "404":
+          description: Medication label not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: DailyMed is unavailable or returned an invalid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +101,64 @@ components:
           type: string
       required:
         - status
+    MedicationLabelType:
+      type: string
+      enum:
+        - prescription
+        - otc
+    MedicationLabel:
+      type: object
+      properties:
+        setId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        publishedDate:
+          type: string
+        labelType:
+          $ref: "#/components/schemas/MedicationLabelType"
+        sourceUrl:
+          type: string
+          format: uri
+      required: [setId, title, publishedDate, labelType, sourceUrl]
+    MedicationCatalogPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MedicationLabel"
+        query:
+          type: string
+          nullable: true
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
+        catalogUpdatedAt:
+          type: string
+      required: [items, query, page, pageSize, totalItems, totalPages, catalogUpdatedAt]
+    MedicationLabelDetail:
+      allOf:
+        - $ref: "#/components/schemas/MedicationLabel"
+        - type: object
+          properties:
+            labelEffectiveDate:
+              type: string
+              nullable: true
+            usesText:
+              type: string
+              nullable: true
+          required: [labelEffectiveDate, usesText]
+    ApiError:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
 

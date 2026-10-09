@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseCare Health - Comprehensive Healthcare Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#035483',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        tealbrand: {
+                            500: '#0d9488',
+                            600: '#0f766e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .animate-fade-in { animation: fadeIn 0.25s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Sticky Crisis Banner -->
+    <div class="bg-rose-600 text-white text-xs sm:text-sm font-medium py-2 px-4 shadow-sm flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-2 max-w-7xl mx-auto w-full justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="flex h-2.5 w-2.5 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                </span>
+                <span class="font-semibold tracking-wide">24/7 Mental Health Crisis Line:</span>
+                <span class="hidden sm:inline">Call or Text <strong class="underline font-bold">988</strong> for free, confidential support.</span>
+                <span class="sm:hidden"><strong class="underline">Call/Text 988</strong></span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="tel:988" class="bg-white text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded text-xs font-bold transition">Call 988 Now</a>
+                <a href="tel:911" class="bg-rose-900 text-white hover:bg-black px-2.5 py-1 rounded text-xs font-bold transition">Emergency 911</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div class="flex-1 flex flex-col lg:flex-row max-w-[1600px] w-full mx-auto">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="lg:w-72 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col border-r border-slate-800">
+            <!-- Brand Logo -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-sky-500 to-teal-400 text-white p-2.5 rounded-xl shadow-lg">
+                        <i data-lucide="activity" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold text-white tracking-tight">PulseCare</h1>
+                        <p class="text-xs text-sky-400 font-medium">Health & Wellness Portal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Search Bar Quick Launch -->
+            <div class="p-4 border-b border-slate-800">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                    <input type="text" id="global-search" onkeyup="handleGlobalSearch(event)" placeholder="Search symptoms, drugs, doctors..." class="w-full bg-slate-800 text-slate-200 placeholder-slate-400 text-xs rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-sky-500 border border-slate-700">
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 p-3 space-y-1 overflow-y-auto custom-scrollbar" id="sidebar-nav">
+                <button onclick="switchTab('symptom-checker')" id="nav-symptom-checker" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition text-white bg-sky-600">
+                    <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                    <span class="truncate">Symptom Checker</span>
+                </button>
+                <button onclick="switchTab('vaccine-hub')" id="nav-vaccine-hub" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="syringe" class="w-4 h-4"></i>
+                    <span class="truncate">Vaccine Scheduler</span>
+                </button>
+                <button onclick="switchTab('drug-directory')" id="nav-drug-directory" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="pill" class="w-4 h-4"></i>
+                    <span class="truncate">Drug & Pill Directory</span>
+                </button>
+                <button onclick="switchTab('medicare-navigator')" id="nav-medicare-navigator" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span class="truncate">Medicare/Medicaid</span>
+                </button>
+                <button onclick="switchTab('patient-portal')" id="nav-patient-portal" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                    <span class="truncate">Patient Telehealth Portal</span>
+                </button>
+                <button onclick="switchTab('conditions-library')" id="nav-conditions-library" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    <span class="truncate">Conditions Encyclopedia</span>
+                </button>
+                <button onclick="switchTab('find-doctor')" id="nav-find-doctor" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span class="truncate">Find-a-Doctor</span>
+                </button>
+                <button onclick="switchTab('diagnostic-guide')" id="nav-diagnostic-guide" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="file-search" class="w-4 h-4"></i>
+                    <span class="truncate">Tests & Procedures</span>
+                </button>
+                <button onclick="switchTab('mental-health')" id="nav-mental-health" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+                    <span class="truncate">Mental Health Hub</span>
+                </button>
+                <button onclick="switchTab('preventive-blog')" id="nav-preventive-blog" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition hover:bg-slate-800 text-slate-300">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span class="truncate">Wellness & Screenings</span>
+                </button>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+                <p>PulseCare Health Hub v3.4</p>
+                <p class="mt-1">© 2026 PulseCare Inc.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-full">
+
+            <div id="mod-symptom-checker" class="tab-content animate-fade-in space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2 text-sky-600 font-semibold text-sm">
+                            <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                            <span>AI Triage Support</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Interactive Symptom Checker</h2>
+                        <p class="text-slate-600 text-sm mt-1">Select your symptoms to receive instant evidence-based guidance on appropriate level of care.</p>
+                    </div>
+                    <button onclick="openDisclaimerModal()" class="inline-flex items-center space-x-2 text-xs bg-amber-50 text-amber-800 border border-amber-300 px-3 py-2 rounded-lg hover:bg-amber-100 transition self-start md:self-center">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                        <span>Read Medical Disclaimer</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Step 1: Selector Panel -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <div class="flex items-center justify-between border-b pb-4">
+                            <h3 class="font-bold text-slate-800 text-lg flex items-center space-x-2">
+                                <span class="bg-sky-100 text-sky-700 w-7 h-7 rounded-full inline-flex items-center justify-center text-xs font-extrabold">1</span>
+                                <span>Select Symptoms & Region</span>
+                            </h3>
+                            <button onclick="resetSymptomChecker()" class="text-xs text-slate-500 hover:text-slate-800 underline">Reset Selection</button>
+                        </div>
+
+                        <!-- Body Region Filter -->
+                        <div>
+                            <label class="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-2">Filter by Body Region</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <button onclick="filterBodyRegion('all')" class="region-btn border border-sky-600 bg-sky-50 text-sky-700 font-medium py-2 px-3 rounded-lg text-xs text-center">Head & Neck</button>
+                                <button onclick="filterBodyRegion('chest')" class="region-btn border border-slate-200 hover:bg-slate-50 font-medium py-2 px-3 rounded-lg text-xs text-center">Chest & Respiration</button>
+                                <button onclick="filterBodyRegion('abdomen')" class="region-btn border border-slate-200 hover:bg-slate-50 font-medium py-2 px-3 rounded-lg text-xs text-center">Abdomen & Digestive</button>
+                                <button onclick="filterBodyRegion('limbs')" class="region-btn border border-slate-200 hover:bg-slate-50 font-medium py-2 px-3 rounded-lg text-xs text-center">General & Muscular</button>
+                            </div>
+                        </div>
+
+                        <!-- Symptom Checklist -->
+                        <div>
+                            <label class="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-2">Check All Present Symptoms</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-64 overflow-y-auto pr-1 custom-scrollbar" id="symptom-checkbox-list">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Patient Age / Duration -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 block mb-1">Patient Age Group</label>
+                                <select id="symptom-age" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs">
+                                    <option value="adult">Adult (18 - 64)</option>
+                                    <option value="senior">Senior (65+)</option>
+                                    <option value="pediatric">Child / Infant (0 - 17)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-700 block mb-1">Duration of Symptoms</label>
+                                <select id="symptom-duration" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs">
+                                    <option value="hours">Less than 24 Hours</option>
+                                    <option value="days">1 - 3 Days</option>
+                                    <option value="week">More than 1 Week</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="evaluateSymptoms()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                            <span>Evaluate Triage Level</span>
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Triage Outcome Card -->
+                    <div class="bg-slate-100 p-6 rounded-2xl border border-slate-200 flex flex-col justify-between" id="triage-result-card">
+                        <div>
+                            <div class="flex items-center space-x-2 text-slate-500 font-semibold text-xs mb-3 uppercase tracking-wider">
+                                <span>Triage Evaluation Outcome</span>
+                            </div>
+                            <div id="triage-status-badge" class="bg-slate-200 text-slate-700 font-bold px-4 py-3 rounded-xl mb-4 text-center">
+                                Select symptoms and click evaluate
+                            </div>
+                            <div id="triage-details" class="space-y-3 text-xs text-slate-600">
+                                <p class="italic text-slate-500">Your personalized recommendation will appear here based on selected symptoms, severity red-flags, and duration.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 space-y-2">
+                            <div class="flex items-start space-x-2">
+                                <i data-lucide="info" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5"></i>
+                                <span>Emergency signs include sudden chest pressure, facial drooping, severe breathlessness, or loss of consciousness.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-vaccine-hub" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2 text-teal-600 font-semibold text-sm">
+                            <i data-lucide="syringe" class="w-4 h-4"></i>
+                            <span>CDC Alignment 2026</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Digital Vaccine Scheduler & Info Hub</h2>
+                        <p class="text-slate-600 text-sm mt-1">Track lifelong immunization schedules and book direct vaccination appointments.</p>
+                    </div>
+                    <button onclick="scrollToScheduler()" class="bg-teal-600 text-white font-semibold text-xs px-4 py-2.5 rounded-xl hover:bg-teal-700 transition">
+                        Schedule Immunization Now
+                    </button>
+                </div>
+
+                <!-- Tabs for Schedules -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex space-x-2 border-b border-slate-200 pb-3 mb-6 overflow-x-auto">
+                        <button onclick="switchVaccineTab('infants')" id="vac-tab-infants" class="vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">Infants & Toddlers (0-24m)</button>
+                        <button onclick="switchVaccineTab('children')" id="vac-tab-children" class="vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Children & Teens (2-18y)</button>
+                        <button onclick="switchVaccineTab('adults')" id="vac-tab-adults" class="vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Adults (19-64y)</button>
+                        <button onclick="switchVaccineTab('seniors')" id="vac-tab-seniors" class="vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Seniors (65+)</button>
+                    </div>
+
+                    <div id="vaccine-schedule-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+                <!-- Booking Portal Simulation & FAQ -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Booking Form -->
+                    <div id="appointment-booking-card" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center space-x-2">
+                            <i data-lucide="calendar-plus" class="w-5 h-5 text-teal-600"></i>
+                            <span>Schedule Appointment</span>
+                        </h3>
+                        <form onsubmit="handleVaccineBooking(event)" class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Select Required Vaccine</label>
+                                <select id="book-vaccine-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                                    <option value="Influenza (Annual Flu)">Influenza (Annual Seasonal Flu)</option>
+                                    <option value="COVID-19 Updated Booster">COVID-19 Updated Booster</option>
+                                    <option value="Tdap (Tetanus, Diphtheria, Pertussis)">Tdap (Tetanus/Diphtheria/Pertussis)</option>
+                                    <option value="Shingrix (Shingles 2-dose)">Shingrix (Shingles 2-dose series)</option>
+                                    <option value="RSV Vaccine (Abrysvo)">RSV Vaccine (Abrysvo)</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="font-medium text-slate-700 block mb-1">Preferred Date</label>
+                                    <input type="date" id="book-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                </div>
+                                <div>
+                                    <label class="font-medium text-slate-700 block mb-1">Preferred Clinic</label>
+                                    <select id="book-location" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                        <option value="PulseCare Central Clinic">PulseCare Central Clinic</option>
+                                        <option value="Westside Community Health">Westside Community Health</option>
+                                        <option value="Metro Pharmacy & Health">Metro Pharmacy Hub</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-lg shadow transition">
+                                Confirm Appointment
+                            </button>
+                        </form>
+                        <div id="booking-confirmation-box" class="hidden bg-emerald-50 border border-emerald-300 text-emerald-800 p-4 rounded-xl text-xs space-y-1">
+                            <!-- Populated on booking -->
+                        </div>
+                    </div>
+
+                    <!-- Vaccine FAQs -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center space-x-2">
+                            <i data-lucide="help-circle" class="w-5 h-5 text-teal-600"></i>
+                            <span>Vaccine Educational FAQ</span>
+                        </h3>
+                        <div class="space-y-3 text-xs" id="vaccine-faq-list">
+                            <details class="group border border-slate-200 rounded-lg p-3">
+                                <summary class="font-bold text-slate-700 cursor-pointer flex justify-between items-center">
+                                    <span>Are vaccine ingredients safe?</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition"></i>
+                                </summary>
+                                <p class="text-slate-600 mt-2">Yes. Vaccine ingredients are thoroughly tested for safety. Micro-quantities of salts, sugars, and stabilizers ensure potency and sterility.</p>
+                            </details>
+                            <details class="group border border-slate-200 rounded-lg p-3">
+                                <summary class="font-bold text-slate-700 cursor-pointer flex justify-between items-center">
+                                    <span>What common side effects should I expect?</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition"></i>
+                                </summary>
+                                <p class="text-slate-600 mt-2">Mild injection site soreness, low-grade fever, or fatigue lasting 24-48 hours indicate your body is successfully building immune defense.</p>
+                            </details>
+                            <details class="group border border-slate-200 rounded-lg p-3">
+                                <summary class="font-bold text-slate-700 cursor-pointer flex justify-between items-center">
+                                    <span>Why are booster doses required?</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition"></i>
+                                </summary>
+                                <p class="text-slate-600 mt-2">Immunity against certain pathogens wanes over time or requires updating due to mutating viral strains (such as seasonal influenza).</p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-drug-directory" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900">Drug Directory & Pill Identifier</h2>
+                    <p class="text-slate-600 text-sm mt-1">Search prescription and OTC medications, analyze drug interactions, or identify unknown pills.</p>
+                    
+                    <!-- Search + Visual Identifier Toggle -->
+                    <div class="mt-4 flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+                            <input type="text" id="drug-search-input" onkeyup="filterDrugList()" placeholder="Search medication name (e.g. Lisinopril, Metformin, Amoxicillin)..." class="w-full bg-slate-50 border border-slate-300 text-xs rounded-xl pl-9 pr-3 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <button onclick="togglePillIdentifierModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs px-4 py-3 rounded-xl flex items-center justify-center space-x-2 transition">
+                            <i data-lucide="eye" class="w-4 h-4 text-sky-400"></i>
+                            <span>Visual Pill Identifier Tool</span>
+                        </button>
+                    </div>
+
+                    <!-- A-Z Index Bar -->
+                    <div class="mt-4 flex flex-wrap gap-1 border-t border-slate-100 pt-3" id="az-index-bar">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Drug Grid & Interaction Checker -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-4" id="drug-cards-container">
+                        <!-- Drug Cards inserted here -->
+                    </div>
+
+                    <!-- Interaction Checker Tool Sidebar -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 h-fit">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i data-lucide="alert-octagon" class="w-5 h-5 text-rose-500"></i>
+                            <span>Drug-to-Drug Interaction Checker</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Select two drugs to verify potential contraindications or dangerous interactions.</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 block mb-1">Medication 1</label>
+                                <select id="interact-drug-1" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs">
+                                    <option value="Lisinopril">Lisinopril (ACE Inhibitor)</option>
+                                    <option value="Ibuprofen">Ibuprofen (NSAID)</option>
+                                    <option value="Metformin">Metformin (Antidiabetic)</option>
+                                    <option value="Warfarin">Warfarin (Anticoagulant)</option>
+                                    <option value="Atorvastatin">Atorvastatin (Statin)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 block mb-1">Medication 2</label>
+                                <select id="interact-drug-2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs">
+                                    <option value="Ibuprofen">Ibuprofen (NSAID)</option>
+                                    <option value="Lisinopril">Lisinopril (ACE Inhibitor)</option>
+                                    <option value="Warfarin">Warfarin (Anticoagulant)</option>
+                                    <option value="Aspirin">Aspirin (NSAID)</option>
+                                    <option value="Metformin">Metformin (Antidiabetic)</option>
+                                </select>
+                            </div>
+                            <button onclick="checkDrugInteraction()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-lg text-xs transition">
+                                Analyze Interaction Risk
+                            </button>
+                        </div>
+
+                        <div id="interaction-result-box" class="hidden p-3 rounded-lg text-xs border">
+                            <!-- JS Result -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-medicare-navigator" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900">Medicare & Medicaid Resource Navigator</h2>
+                    <p class="text-slate-600 text-sm mt-1">Determine your eligibility, understand Parts A–D, and connect with local health insurance assistance (SHIP).</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Interactive Eligibility Checker -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i data-lucide="calculator" class="w-5 h-5 text-indigo-600"></i>
+                            <span>Eligibility Checker</span>
+                        </h3>
+                        <form onsubmit="calculateEligibility(event)" class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Your Age</label>
+                                <input type="number" id="eligibility-age" placeholder="e.g. 66" min="1" max="120" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                            </div>
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Disability Status</label>
+                                <select id="eligibility-disability" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                    <option value="none">No Long-Term Disability</option>
+                                    <option value="disabled">Receiving Disability Benefits (SSDI 24+ mos)</option>
+                                    <option value="esrd">End-Stage Renal Disease (ESRD) / ALS</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Annual Household Income ($)</label>
+                                <input type="number" id="eligibility-income" placeholder="e.g. 21000" min="0" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition">
+                                Assess Plan Eligibility
+                            </button>
+                        </form>
+
+                        <div id="eligibility-result" class="hidden p-4 rounded-xl text-xs space-y-2 border">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Breakdown of Medicare Parts A, B, C, D -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500">
+                                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Medicare Part A</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-2">Hospital Insurance</h4>
+                                <p class="text-xs text-slate-600 mt-1">Covers inpatient hospital stays, skilled nursing facility care, hospice, and limited home healthcare.</p>
+                                <span class="text-[11px] text-blue-600 font-semibold block mt-3">$0 Premium for most (worked 10+ yrs)</span>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-teal-500">
+                                <span class="bg-teal-100 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Medicare Part B</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-2">Medical Insurance</h4>
+                                <p class="text-xs text-slate-600 mt-1">Covers doctor visits, outpatient services, preventive care, durable medical equipment, and lab tests.</p>
+                                <span class="text-[11px] text-teal-600 font-semibold block mt-3">Standard 2026 Monthly Premium applies</span>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-purple-500">
+                                <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Medicare Part C</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-2">Medicare Advantage</h4>
+                                <p class="text-xs text-slate-600 mt-1">All-in-one bundled plans provided by private approved insurers combining Parts A, B, and usually D, plus vision/dental.</p>
+                                <span class="text-[11px] text-purple-600 font-semibold block mt-3">Varies by private carrier network</span>
+                            </div>
+
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+                                <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Medicare Part D</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-2">Prescription Drug Coverage</h4>
+                                <p class="text-xs text-slate-600 mt-1">Helps cover the cost of prescription medications. Tiered formularies dictate individual copays.</p>
+                                <span class="text-[11px] text-emerald-600 font-semibold block mt-3">Separate monthly plan premium</span>
+                            </div>
+                        </div>
+
+                        <!-- Downloadable Checklist & Local SHIP -->
+                        <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h4 class="font-bold text-base">State Health Insurance Assistance Program (SHIP)</h4>
+                                <p class="text-slate-400 text-xs mt-1">Get free, unbiased 1-on-1 counseling on enrollment forms and state assistance programs.</p>
+                            </div>
+                            <button onclick="alert('Downloading official 2026 Medicare Enrollment Checklist (PDF)...')" class="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl whitespace-nowrap transition flex items-center space-x-2">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>Download Checklist</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-patient-portal" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center space-x-2 text-emerald-600 font-semibold text-xs">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span>256-Bit HIPAA-Encrypted Gateway</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Patient Portal & Telehealth Gateway</h2>
+                    </div>
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold text-slate-800">Patient ID: #PX-88204</p>
+                        <p class="text-xs text-slate-500">Logged in as: Sarah Jenkins</p>
+                    </div>
+                </div>
+
+                <!-- Sub Navigation Tabs for Portal -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex space-x-2 border-b border-slate-200 pb-3 mb-6 overflow-x-auto">
+                        <button onclick="switchPortalTab('telehealth')" id="ptab-telehealth" class="ptab-btn px-4 py-2 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">Virtual Video Visit</button>
+                        <button onclick="switchPortalTab('messages')" id="ptab-messages" class="ptab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Provider Messages (2)</button>
+                        <button onclick="switchPortalTab('labs')" id="ptab-labs" class="ptab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Lab Results</button>
+                        <button onclick="switchPortalTab('refills')" id="ptab-refills" class="ptab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">1-Click Rx Refills</button>
+                        <button onclick="switchPortalTab('billing')" id="ptab-billing" class="ptab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600">Billing & Payments</button>
+                    </div>
+
+                    <!-- Telehealth Video Demo -->
+                    <div id="portal-telehealth" class="portal-subtab space-y-4">
+                        <div class="bg-slate-900 rounded-2xl p-6 text-white text-center flex flex-col items-center justify-center min-h-[280px] relative overflow-hidden">
+                            <div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full animate-pulse flex items-center space-x-1">
+                                <span class="w-2 h-2 bg-white rounded-full"></span>
+                                <span>Live Provider Ready</span>
+                            </div>
+                            <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border-2 border-sky-400">
+                                <i data-lucide="video" class="w-10 h-10 text-sky-400"></i>
+                            </div>
+                            <h3 class="text-lg font-bold">Upcoming Appointment: Dr. Aris Vance, MD</h3>
+                            <p class="text-xs text-slate-400 mt-1">Scheduled for Today at 2:30 PM EDT (Internal Medicine)</p>
+                            <button onclick="simulateTelehealthCall()" class="mt-5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-lg transition flex items-center space-x-2">
+                                <i data-lucide="video" class="w-4 h-4"></i>
+                                <span>Launch Telehealth Room Demo</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messaging Panel -->
+                    <div id="portal-messages" class="portal-subtab hidden space-y-4">
+                        <div class="border border-slate-200 rounded-xl overflow-hidden divide-y">
+                            <div class="p-4 bg-sky-50 flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Dr. Elena Rostova (Cardiology)</h4>
+                                    <p class="text-[11px] text-slate-600 mt-0.5">Re: Routine Blood Work Follow-up</p>
+                                </div>
+                                <span class="text-[10px] text-slate-400">Today, 10:14 AM</span>
+                            </div>
+                            <div class="p-4 text-xs text-slate-600 bg-white">
+                                "Hi Sarah, your recent lipid panel looks great! Your HDL is up and LDL has decreased by 12 points. Keep up with the recommended Mediterranean diet regimen."
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lab Results Viewer -->
+                    <div id="portal-labs" class="portal-subtab hidden space-y-3">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-700 font-bold border-b">
+                                        <th class="p-3">Test Name</th>
+                                        <th class="p-3">Date</th>
+                                        <th class="p-3">Result</th>
+                                        <th class="p-3">Reference Range</th>
+                                        <th class="p-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y text-slate-600">
+                                    <tr>
+                                        <td class="p-3 font-semibold text-slate-800">Comprehensive Metabolic Panel</td>
+                                        <td class="p-3">Oct 2, 2026</td>
+                                        <td class="p-3 font-bold text-emerald-600">Normal</td>
+                                        <td class="p-3">Standard</td>
+                                        <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">Reviewed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold text-slate-800">Hemoglobin A1c</td>
+                                        <td class="p-3">Oct 2, 2026</td>
+                                        <td class="p-3 font-bold text-slate-800">5.4 %</td>
+                                        <td class="p-3">&lt; 5.7 %</td>
+                                        <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">Reviewed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold text-slate-800">Vitamin D, 25-Hydroxy</td>
+                                        <td class="p-3">Aug 14, 2026</td>
+                                        <td class="p-3 font-bold text-amber-600">28 ng/mL</td>
+                                        <td class="p-3">30 - 100 ng/mL</td>
+                                        <td class="p-3"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Slightly Low</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 1-Click Rx Refill -->
+                    <div id="portal-refills" class="portal-subtab hidden space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 rounded-xl p-4 flex justify-between items-center bg-slate-50">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-xs">Atorvastatin 20mg Tablet</h4>
+                                    <p class="text-[11px] text-slate-500">Take 1 tablet daily at bedtime</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Refills Remaining: 2</p>
+                                </div>
+                                <button onclick="requestRefill('Atorvastatin 20mg')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+                                    Request Refill
+                                </button>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-4 flex justify-between items-center bg-slate-50">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-xs">Lisinopril 10mg Tablet</h4>
+                                    <p class="text-[11px] text-slate-500">Take 1 tablet in morning</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Refills Remaining: 1</p>
+                                </div>
+                                <button onclick="requestRefill('Lisinopril 10mg')" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+                                    Request Refill
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Billing & Payments -->
+                    <div id="portal-billing" class="portal-subtab hidden space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-xl border flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-slate-500">Outstanding Balance</p>
+                                <p class="text-2xl font-black text-slate-900">$35.00</p>
+                                <p class="text-[10px] text-slate-400">Co-pay for Outpatient Visit (Oct 2)</p>
+                            </div>
+                            <button onclick="alert('Payment processing portal initialized. Mock checkout successful!')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition">
+                                Pay Bill Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-conditions-library" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900">Medical Conditions & Disease Library</h2>
+                    <p class="text-slate-600 text-sm mt-1">Plain-language medical encyclopedia and "Living With..." lifestyle guides.</p>
+                    <input type="text" id="condition-search" onkeyup="filterConditions()" placeholder="Search condition (e.g., Diabetes, Hypertension, Asthma)..." class="mt-4 w-full bg-slate-50 border border-slate-300 text-xs rounded-xl p-3">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="conditions-grid">
+                    <!-- Cards populated by JS -->
+                </div>
+            </div>
+
+            <div id="mod-find-doctor" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900">Find-a-Doctor & Provider Directory</h2>
+                    <p class="text-slate-600 text-sm mt-1">Search board-certified physicians by specialty, insurance, location, and language.</p>
+                    
+                    <!-- Search Filters -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs">
+                        <select id="doc-filter-specialty" onchange="filterDoctors()" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                            <option value="all">All Specialties</option>
+                            <option value="Internal Medicine">Internal Medicine</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Dermatology">Dermatology</option>
+                        </select>
+                        <select id="doc-filter-insurance" onchange="filterDoctors()" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                            <option value="all">All Insurance Plans</option>
+                            <option value="BlueCross">BlueCross BlueShield</option>
+                            <option value="Medicare">Medicare Accepted</option>
+                            <option value="Aetna">Aetna</option>
+                            <option value="Kaiser">Kaiser Permanente</option>
+                        </select>
+                        <select id="doc-filter-gender" onchange="filterDoctors()" class="bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                            <option value="all">Any Provider Gender</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="doctors-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div id="mod-diagnostic-guide" class="tab-content hidden animate-fade-in space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-900">Diagnostic Test & Procedure Guide</h2>
+                    <p class="text-slate-600 text-sm mt-1">Understand preparation rules, fasting guidelines, and estimate out-of-pocket medical costs.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Out-of-Pocket Estimator -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 h-fit">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-emerald-600"></i>
+                            <span>Cost Transparency Estimator</span>
+                        </h3>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Select Medical Test</label>
+                                <select id="cost-test-select" onchange="calculateCostEstimate()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                    <option value="mri" data-price="1200">MRI Brain Scan (w/ Contrast)</option>
+                                    <option value="cmp" data-price="150">Comprehensive Metabolic Panel</option>
+                                    <option value="colonoscopy" data-price="1800">Screening Colonoscopy</option>
+                                    <option value="mammogram" data-price="350">3D Mammogram</option>
+                                    <option value="echo" data-price="850">Echocardiogram Ultrasound</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Insurance Coverage Level</label>
+                                <select id="cost-insurance-select" onchange="calculateCostEstimate()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                    <option value="80">Standard Preferred (80% Covered)</option>
+                                    <option value="50">High Deductible (50% Covered)</option>
+                                    <option value="0">Uninsured / Self-Pay (0% Covered)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Total Procedure Billed Cost:</span>
+                                <span id="cost-total-billed" class="font-bold">$1,200.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Estimated Insurance Share:</span>
+                                <span id="cost-insurance-share" class="font-bold text-emerald-600">-$960.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-900 font-extrabold text-sm pt-2 border-t">
+                                <span>Estimated Patient Out-of-Pocket:</span>
+                                <span id="cost-patient-pay" class="text-sky-700">$240.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step-by-Step Test Guides -->
+                    <div class="lg:col-span-2 space-y-4" id="diagnostic-guides-container">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-mental-health" class="tab-content hidden animate-fade-in space-y-6">
+                <!-- Crisis Banner Card -->
+                <div class="bg-gradient-to-r from-rose-600 to-amber-600 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="bg-white/20 uppercase text-[10px] font-extrabold px-2.5 py-1 rounded-md">24/7 Support Available</span>
+                        <h2 class="text-2xl font-bold mt-2">Suicide & Crisis Lifeline</h2>
+                        <p class="text-rose-100 text-xs mt-1">Free, confidential assistance available 24 hours a day, 7 days a week.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <a href="tel:988" class="bg-white text-rose-700 font-extrabold px-5 py-3 rounded-xl shadow hover:bg-rose-50 transition text-sm">Call or Text 988</a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Interactive Assessment Tools (PHQ-9 / GAD-7) -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div class="flex justify-between items-center border-b pb-3">
+                            <h3 class="font-bold text-slate-800 text-base">Self-Assessment Tool</h3>
+                            <select id="mental-screener-type" onchange="switchScreenerType()" class="bg-slate-50 border border-slate-300 text-xs rounded-lg p-1.5 font-semibold">
+                                <option value="phq9">PHQ-9 Depression Screener</option>
+                                <option value="gad7">GAD-7 Anxiety Screener</option>
+                            </select>
+                        </div>
+
+                        <p class="text-xs text-slate-500">Over the last 2 weeks, how often have you been bothered by the following problems?</p>
+
+                        <div id="screener-questions-list" class="space-y-4 text-xs">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <button onclick="calculateMentalScore()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl transition">
+                            Submit Confidential Assessment
+                        </button>
+
+                        <div id="screener-result-box" class="hidden p-4 rounded-xl text-xs space-y-2 border">
+                            <!-- Outcome details -->
+                        </div>
+                    </div>
+
+                    <!-- Mindfulness & Coping Strategies -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i data-lucide="heart" class="w-5 h-5 text-rose-500"></i>
+                            <span>Immediate Grounding & Coping Exercises</span>
+                        </h3>
+
+                        <div class="border border-slate-200 p-4 rounded-xl space-y-2 bg-slate-50">
+                            <h4 class="font-bold text-xs text-slate-800">5-4-3-2-1 Grounding Technique for Panic</h4>
+                            <p class="text-xs text-slate-600">Acknowledge 5 things you see, 4 things you can touch, 3 things you hear, 2 things you smell, and 1 positive affirmation.</p>
+                        </div>
+
+                        <div class="border border-slate-200 p-4 rounded-xl space-y-2 bg-slate-50">
+                            <h4 class="font-bold text-xs text-slate-800">Box Breathing Timer Guide</h4>
+                            <p class="text-xs text-slate-600">Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds, hold for 4 seconds. Repeat for 4 cycles.</p>
+                            <button onclick="startBoxBreathingDemo()" id="breathing-btn" class="mt-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition">
+                                Start Guided Breathing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mod-preventive-blog" class="tab-content hidden animate-fade-in space-y-6">
+                <!-- Seasonal Advisory Banner -->
+                <div class="bg-teal-700 text-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-start space-x-3">
+                        <i data-lucide="cloud-sun" class="w-8 h-8 text-teal-300 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <span class="bg-teal-800 text-teal-200 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded">Seasonal Advisory</span>
+                            <h3 class="text-xl font-bold mt-1">2026 Autumn & Winter Respiratory Season Prep</h3>
+                            <p class="text-teal-100 text-xs mt-1">Ensure your family is protected against seasonal Flu, RSV, and updated COVID strains with timely immunizations and indoor air filtration.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Articles Grid -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 text-sm">Evidence-Based Articles</h3>
+                            <div class="flex space-x-1 text-xs">
+                                <button onclick="filterArticles('all')" class="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 font-bold">All</button>
+                                <button onclick="filterArticles('Nutrition')" class="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-600">Nutrition</button>
+                                <button onclick="filterArticles('Fitness')" class="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-600">Fitness</button>
+                                <button onclick="filterArticles('Sleep')" class="px-2.5 py-1 rounded-lg hover:bg-slate-100 text-slate-600">Sleep</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="articles-grid">
+                            <!-- Articles JS -->
+                        </div>
+                    </div>
+
+                    <!-- Annual Screening Checklist Tool -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 h-fit">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i data-lucide="check-square" class="w-5 h-5 text-sky-600"></i>
+                            <span>Personalized Annual Screening Checklist</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Generate your personalized preventive health checklist based on demographic guidelines.</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-medium text-slate-700 block mb-1">Age Group</label>
+                                <select id="checklist-age" onchange="generateChecklist()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                                    <option value="20s">20s - 30s</option>
+                                    <option value="40s">40s - 50s</option>
+                                    <option value="60s">60s +</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="checklist-items-container" class="space-y-2 pt-2 border-t text-xs">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Medical Disclaimer Modal -->
+    <div id="disclaimer-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center space-x-2 text-amber-600 font-bold text-base">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span>Important Medical Disclaimer</span>
+                </div>
+                <button onclick="closeDisclaimerModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="text-xs text-slate-600 space-y-3 leading-relaxed max-h-60 overflow-y-auto custom-scrollbar">
+                <p><strong>PulseCare Health Hub is an informational and educational tool only.</strong> Content on this platform is not intended to be a substitute for professional medical advice, diagnosis, or treatment.</p>
+                <p>Always seek the direct advice of your physician or qualified health provider with any questions you may have regarding a medical condition.</p>
+                <p><strong>If you think you may have a medical emergency, call 911 or go to the nearest emergency room immediately.</strong></p>
+            </div>
+            <button onclick="closeDisclaimerModal()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2.5 rounded-xl text-xs transition">
+                I Understand and Agree
+            </button>
+        </div>
+    </div>
+
+    <!-- Visual Pill Identifier Modal Tool -->
+    <div id="pill-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                    <i data-lucide="eye" class="w-5 h-5 text-sky-600"></i>
+                    <span>Visual Pill Identifier Tool</span>
+                </h3>
+                <button onclick="togglePillIdentifierModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="runPillIdentifier(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Pill Shape</label>
+                    <select id="pill-shape" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                        <option value="round">Round / Circular</option>
+                        <option value="oval">Oval / Elliptical</option>
+                        <option value="capsule">Capsule / Oblong</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Pill Color</label>
+                    <select id="pill-color" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                        <option value="white">White / Off-White</option>
+                        <option value="blue">Blue / Light Blue</option>
+                        <option value="yellow">Yellow / Peach</option>
+                        <option value="pink">Pink / Red</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Imprint Code / Letters (Optional)</label>
+                    <input type="text" id="pill-imprint" placeholder="e.g., L10 or M367" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                </div>
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl transition">
+                    Find Matching Pill
+                </button>
+            </form>
+
+            <div id="pill-result-box" class="hidden p-4 rounded-xl text-xs border bg-slate-50 space-y-2">
+                <!-- Pill match output -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider Booking Modal -->
+    <div id="doc-booking-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-800 text-base" id="doc-modal-title">Book Provider Appointment</h3>
+                <button onclick="closeDocBookingModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="confirmDocBooking(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Selected Doctor</label>
+                    <input type="text" id="doc-modal-name" readonly class="w-full bg-slate-100 border border-slate-200 text-slate-700 rounded-lg p-2 font-bold">
+                </div>
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Visit Type</label>
+                    <select class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                        <option>In-Person Office Visit</option>
+                        <option>Telehealth Virtual Video</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-medium text-slate-700 block mb-1">Preferred Date</label>
+                    <input type="date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition">
+                    Confirm Appointment Slot
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global State & Data Store
+        const symptomDatabase = [
+            { id: 'fever', name: 'Fever (>100.4°F)', region: 'limbs', triage: 'pcp', severity: 2 },
+            { id: 'chest_pain', name: 'Sudden Pressure/Chest Pain', region: 'chest', triage: 'er', severity: 5 },
+            { id: 'cough', name: 'Persistent Cough / Congestion', region: 'chest', triage: 'self', severity: 1 },
+            { id: 'short_breath', name: 'Shortness of Breath at Rest', region: 'chest', triage: 'urgent', severity: 4 },
+            { id: 'headache', name: 'Mild/Moderate Headache', region: 'all', triage: 'self', severity: 1 },
+            { id: 'severe_headache', name: 'Sudden "Thunderclap" Headache', region: 'all', triage: 'er', severity: 5 },
+            { id: 'ab_pain', name: 'Localized Severe Abdominal Pain', region: 'abdomen', triage: 'urgent', severity: 3 },
+            { id: 'nausea', name: 'Mild Nausea or Upset Stomach', region: 'abdomen', triage: 'self', severity: 1 },
+            { id: 'joint_pain', name: 'Joint Soreness or Stiffness', region: 'limbs', triage: 'self', severity: 1 },
+        ];
+
+        const vaccineSchedules = {
+            infants: [
+                { name: 'HepB (Hepatitis B)', dose: 'Dose 1-3', age: 'Birth, 1-2m, 6-18m', info: 'Protects against liver infection.' },
+                { name: 'DTaP', dose: 'Dose 1-4', age: '2m, 4m, 6m, 15-18m', info: 'Covers Diphtheria, Tetanus, Pertussis.' },
+                { name: 'Rotavirus (RV)', dose: 'Dose 1-2', age: '2m, 4m', info: 'Prevents severe diarrhea illness.' }
+            ],
+            children: [
+                { name: 'MMR (Measles, Mumps, Rubella)', dose: 'Dose 1 & 2', age: '12-15m, 4-6 yrs', info: 'Essential viral protection.' },
+                { name: 'Varicella (Chickenpox)', dose: 'Dose 1 & 2', age: '12-15m, 4-6 yrs', info: 'Prevents varicella zoster virus.' },
+                { name: 'HPV Vaccine', dose: '2-Dose Series', age: '11-12 yrs', info: 'Protects against HPV-related cancers.' }
+            ],
+            adults: [
+                { name: 'Annual Seasonal Flu', dose: '1 Dose Yearly', age: '19+ years', info: 'Annual updated influenza strain defense.' },
+                { name: 'Tdap Booster', dose: 'Every 10 Years', age: '19+ years', info: 'Tetanus and diphtheria booster.' },
+                { name: 'COVID-19 Updated', dose: 'Annual/Periodic', age: '19+ years', info: 'Updated spike variant coverage.' }
+            ],
+            seniors: [
+                { name: 'High-Dose Seasonal Flu', dose: 'Annual', age: '65+ years', info: 'Enhanced immune response formulation.' },
+                { name: 'Shingrix (Shingles)', dose: '2 Doses', age: '50+ years', info: '90%+ effective against shingles flare-up.' },
+                { name: 'Pneumococcal (PCV20)', dose: 'Single Dose', age: '65+ years', info: 'Protects against severe pneumonia.' }
+            ]
+        };
+
+        const drugDatabase = [
+            { name: 'Lisinopril', class: 'ACE Inhibitor', uses: 'High Blood Pressure (Hypertension), Heart Failure', dosage: '10mg - 40mg once daily', sideEffects: 'Dry cough, dizziness, elevated potassium', letter: 'L' },
+            { name: 'Metformin', class: 'Biguanide Antidiabetic', uses: 'Type 2 Diabetes Mellitus management', dosage: '500mg - 1000mg twice daily with meals', sideEffects: 'Mild nausea, abdominal upset, B12 deficiency', letter: 'M' },
+            { name: 'Amoxicillin', class: 'Penicillin Antibiotic', uses: 'Bacterial infections (ear, sinus, throat)', dosage: '500mg every 8 hours for 7-10 days', sideEffects: 'Diarrhea, mild skin rash, stomach discomfort', letter: 'A' },
+            { name: 'Atorvastatin', class: 'Statin (HMG-CoA Reductase Inhibitor)', uses: 'High Cholesterol (Hyperlipidemia)', dosage: '10mg - 80mg daily at bedtime', sideEffects: 'Muscle soreness, mild elevated liver enzymes', letter: 'A' },
+            { name: 'Ibuprofen', class: 'NSAID (Over-the-Counter)', uses: 'Pain, inflammation, fever reduction', dosage: '200mg - 400mg every 4-6 hours PRN', sideEffects: 'Stomach irritation, elevated BP with prolonged use', letter: 'I' }
+        ];
+
+        const conditionsDatabase = [
+            { name: 'Type 2 Diabetes', cat: 'Metabolic', summary: 'A chronic condition affecting how the body processes blood sugar (glucose).', causes: 'Insulin resistance, genetic factors, sedentary lifestyle.', lifestyle: 'Follow a low-glycemic Mediterranean diet, engage in 150 mins/week of moderate aerobic exercise.' },
+            { name: 'Hypertension', cat: 'Cardiovascular', summary: 'High blood pressure that long-term can lead to coronary artery disease or stroke.', causes: 'High sodium diet, stress, genetics, age.', lifestyle: 'Adopt DASH diet (<2,300mg sodium/day), monitor BP daily, reduce stress through mindfulness.' },
+            { name: 'Asthma', cat: 'Respiratory', summary: 'A condition in which airways narrow, swell, and produce extra mucus.', causes: 'Environmental allergens, exercise, cold air, viral infection.', lifestyle: 'Identify specific allergen triggers, keep rescue inhaler accessible, maintain healthy BMI.' }
+        ];
+
+        const doctorsDatabase = [
+            { id: 1, name: 'Dr. Aris Vance, MD', specialty: 'Internal Medicine', insurance: 'BlueCross', gender: 'Male', rating: 4.9, location: 'Downtown Medical Center', lang: 'English, Spanish' },
+            { id: 2, name: 'Dr. Elena Rostova, MD', specialty: 'Cardiology', insurance: 'Medicare', gender: 'Female', rating: 5.0, location: 'Heart & Vascular Institute', lang: 'English, Russian' },
+            { id: 3, name: 'Dr. Marcus Chen, MD', specialty: 'Pediatrics', insurance: 'Aetna', gender: 'Male', rating: 4.8, location: 'Westside Pediatric Clinic', lang: 'English, Mandarin' },
+            { id: 4, name: 'Dr. Sarah Al-Mansoor, MD', specialty: 'Dermatology', insurance: 'Kaiser', gender: 'Female', rating: 4.9, location: 'Skin Health Associates', lang: 'English, Arabic' }
+        ];
+
+        const diagnosticGuides = [
+            { name: 'Brain MRI Scan (with Contrast)', duration: '45 - 60 Minutes', prep: 'Remove all metal objects. Fast 4 hours prior if receiving IV contrast.', recovery: 'Immediate return to daily activities.' },
+            { name: 'Comprehensive Metabolic Panel (CMP)', duration: '10 Minutes (Blood Draw)', prep: 'Fast (water only) for 10-12 hours prior to lab draw.', recovery: 'Immediate.' },
+            { name: 'Screening Colonoscopy', duration: '30 - 45 Minutes', prep: 'Full bowel prep procedure 24h prior. Clear liquid diet day before.', recovery: 'Rest at home remainder of day due to sedation.' }
+        ];
+
+        const mentalQuestionsPHQ9 = [
+            "Little interest or pleasure in doing things?",
+            "Feeling down, depressed, or hopeless?",
+            "Trouble falling or staying asleep, or sleeping too much?",
+            "Feeling tired or having little energy?"
+        ];
+
+        const articlesDatabase = [
+            { title: '10 Science-Backed Foods for Heart Health', cat: 'Nutrition', readTime: '4 min read', desc: 'How leafy greens, berries, and omega-3 fatty acids protect blood vessels.' },
+            { title: 'The Power of 30-Minute Daily Walking', cat: 'Fitness', readTime: '3 min read', desc: 'Why low-impact cardiovascular movement significantly lowers mortality risk.' },
+            { title: 'Sleep Hygiene Protocols for Deeper Rest', cat: 'Sleep', readTime: '5 min read', desc: 'Optimizing bedroom temperature, light exposure, and circadian rhythm.' }
+        ];
+
+        window.onload = function() {
+            // Check Lucide availability
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            
+            // Initial Renders
+            renderSymptomChecklist('all');
+            switchVaccineTab('infants');
+            renderAZIndex();
+            renderDrugCards(drugDatabase);
+            renderConditions(conditionsDatabase);
+            renderDoctors(doctorsDatabase);
+            renderDiagnosticGuides();
+            switchScreenerType();
+            renderArticles(articlesDatabase);
+            generateChecklist();
+            calculateCostEstimate();
+
+            // Auto-trigger disclaimer on launch
+            setTimeout(openDisclaimerModal, 800);
+        };
+
+        // Tab Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('mod-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-sky-600', 'text-white');
+                el.classList.add('hover:bg-slate-800', 'text-slate-300');
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.add('bg-sky-600', 'text-white');
+                activeNav.classList.remove('hover:bg-slate-800', 'text-slate-300');
+            }
+        }
+
+        // Global Search
+        function handleGlobalSearch(e) {
+            if (e.key === 'Enter') {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) return;
+
+                if (term.includes('fever') || term.includes('pain') || term.includes('symptom')) {
+                    switchTab('symptom-checker');
+                } else if (term.includes('flu') || term.includes('vaccine') || term.includes('shot')) {
+                    switchTab('vaccine-hub');
+                } else if (term.includes('doctor') || term.includes('dr')) {
+                    switchTab('find-doctor');
+                } else {
+                    switchTab('drug-directory');
+                    document.getElementById('drug-search-input').value = term;
+                    filterDrugList();
+                }
+            }
+        }
+
+        // Module 1: Symptom Checker
+        function renderSymptomChecklist(region) {
+            const container = document.getElementById('symptom-checkbox-list');
+            container.innerHTML = '';
+            
+            const filtered = region === 'all' 
+                ? symptomDatabase 
+                : symptomDatabase.filter(s => s.region === region || s.region === 'all');
+
+            filtered.forEach(s => {
+                const item = document.createElement('label');
+                item.className = 'flex items-center space-x-2.5 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs';
+                item.innerHTML = `
+                    <input type="checkbox" value="${s.id}" class="symptom-cb rounded border-slate-300 text-sky-600 focus:ring-sky-500 w-4 h-4">
+                    <span class="text-slate-700 font-medium">${s.name}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function filterBodyRegion(region) {
+            document.querySelectorAll('.region-btn').forEach(btn => {
+                btn.className = 'region-btn border border-slate-200 hover:bg-slate-50 font-medium py-2 px-3 rounded-lg text-xs text-center';
+            });
+            event.target.className = 'region-btn border border-sky-600 bg-sky-50 text-sky-700 font-medium py-2 px-3 rounded-lg text-xs text-center';
+            renderSymptomChecklist(region);
+        }
+
+        function resetSymptomChecker() {
+            document.querySelectorAll('.symptom-cb').forEach(cb => cb.checked = false);
+            document.getElementById('triage-status-badge').className = 'bg-slate-200 text-slate-700 font-bold px-4 py-3 rounded-xl mb-4 text-center';
+            document.getElementById('triage-status-badge').innerText = 'Select symptoms and click evaluate';
+            document.getElementById('triage-details').innerHTML = '<p class="italic text-slate-500">Your personalized recommendation will appear here based on selected symptoms, severity red-flags, and duration.</p>';
+        }
+
+        function evaluateSymptoms() {
+            const checkedBoxes = Array.from(document.querySelectorAll('.symptom-cb:checked')).map(cb => cb.value);
+            const badge = document.getElementById('triage-status-badge');
+            const details = document.getElementById('triage-details');
+
+            if (checkedBoxes.length === 0) {
+                badge.className = 'bg-amber-100 text-amber-800 font-bold px-4 py-3 rounded-xl mb-4 text-center';
+                badge.innerText = 'No symptoms selected';
+                details.innerHTML = '<p class="text-amber-700 font-medium">Please check at least one symptom to run triage analysis.</p>';
+                return;
+            }
+
+            const selectedObjects = symptomDatabase.filter(s => checkedBoxes.includes(s.id));
+            const maxSeverity = Math.max(...selectedObjects.map(s => s.severity));
+
+            if (maxSeverity >= 5) {
+                badge.className = 'bg-rose-600 text-white font-extrabold px-4 py-3 rounded-xl mb-4 text-center text-sm uppercase tracking-wide shadow-lg animate-bounce';
+                badge.innerText = 'EMERGENCY: CALL 911 OR VISIT ER IMMEDIATELY';
+                details.innerHTML = `
+                    <div class="space-y-2">
+                        <p class="font-bold text-rose-700">Critical Red-Flag Symptoms Detected!</p>
+                        <p>Your selected symptoms indicate a potential high-risk condition requiring emergency resuscitation or immediate acute hospital care.</p>
+                        <p class="font-semibold text-slate-800">Do not drive yourself. Have someone call 911.</p>
+                    </div>
+                `;
+            } else if (maxSeverity >= 3) {
+                badge.className = 'bg-amber-500 text-white font-bold px-4 py-3 rounded-xl mb-4 text-center text-sm';
+                badge.innerText = 'URGENT CARE / SAME-DAY CLINIC RECOMMENDED';
+                details.innerHTML = `
+                    <p class="font-semibold text-slate-800">Prompt medical evaluation advised within 12–24 hours.</p>
+                    <p class="mt-1">Visit an Urgent Care Center or request a same-day acute visit with your primary care clinic.</p>
+                `;
+            } else {
+                badge.className = 'bg-emerald-600 text-white font-bold px-4 py-3 rounded-xl mb-4 text-center text-sm';
+                badge.innerText = 'SELF-CARE & ROUTINE DOCTOR VISIT';
+                details.innerHTML = `
+                    <p class="font-semibold text-slate-800">Mild symptom profile detected.</p>
+                    <p class="mt-1">Rest, hydration, and OTC symptomatic relief are typically appropriate. Schedule a visit with your primary physician if symptoms persist > 5 days.</p>
+                `;
+            }
+        }
+
+        // Module 2: Vaccine Hub
+        function switchVaccineTab(key) {
+            document.querySelectorAll('.vac-tab-btn').forEach(b => {
+                b.className = 'vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600';
+            });
+            const activeBtn = document.getElementById('vac-tab-' + key);
+            if (activeBtn) activeBtn.className = 'vac-tab-btn px-4 py-2 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200';
+
+            const container = document.getElementById('vaccine-schedule-container');
+            container.innerHTML = '';
+
+            vaccineSchedules[key].forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-slate-800 text-xs">${v.name}</h4>
+                        <span class="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded">${v.dose}</span>
+                    </div>
+                    <p class="text-[11px] font-semibold text-teal-700">Recommended: ${v.age}</p>
+                    <p class="text-xs text-slate-600">${v.info}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function scrollToScheduler() {
+            document.getElementById('appointment-booking-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleVaccineBooking(e) {
+            e.preventDefault();
+            const type = document.getElementById('book-vaccine-type').value;
+            const date = document.getElementById('book-date').value;
+            const loc = document.getElementById('book-location').value;
+
+            const box = document.getElementById('booking-confirmation-box');
+            box.classList.remove('hidden');
+            box.innerHTML = `
+                <div class="font-bold text-sm flex items-center space-x-1.5 text-emerald-800">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span>Vaccination Appointment Confirmed!</span>
+                </div>
+                <p class="mt-1"><strong>Vaccine:</strong> ${type}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Location:</strong> ${loc}</p>
+                <p class="text-[10px] text-emerald-600 mt-2">A confirmation QR code and reminder sms have been dispatched.</p>
+            `;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // Module 3: Drug Directory
+        function renderAZIndex() {
+            const container = document.getElementById('az-index-bar');
+            container.innerHTML = '';
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const btn = document.createElement('button');
+                btn.className = 'w-6 h-6 rounded text-[10px] font-bold text-slate-600 hover:bg-slate-200 flex items-center justify-center';
+                btn.innerText = letter;
+                btn.onclick = () => {
+                    const filtered = drugDatabase.filter(d => d.letter === letter);
+                    renderDrugCards(filtered);
+                };
+                container.appendChild(btn);
+            }
+        }
+
+        function renderDrugCards(list) {
+            const container = document.getElementById('drug-cards-container');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs">No matching medications found.</div>';
+                return;
+            }
+
+            list.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">${d.name}</h3>
+                            <span class="text-[11px] font-semibold text-sky-600">${d.class}</span>
+                        </div>
+                        <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">Prescription / OTC</span>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-1 mt-2">
+                        <p><strong>Primary Uses:</strong> ${d.uses}</p>
+                        <p><strong>Typical Dosage:</strong> ${d.dosage}</p>
+                        <p class="text-slate-500"><strong>Common Side Effects:</strong> ${d.sideEffects}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDrugList() {
+            const q = document.getElementById('drug-search-input').value.toLowerCase();
+            const filtered = drugDatabase.filter(d => d.name.toLowerCase().includes(q) || d.uses.toLowerCase().includes(q));
+            renderDrugCards(filtered);
+        }
+
+        function checkDrugInteraction() {
+            const d1 = document.getElementById('interact-drug-1').value;
+            const d2 = document.getElementById('interact-drug-2').value;
+            const box = document.getElementById('interaction-result-box');
+            box.classList.remove('hidden');
+
+            if (d1 === d2) {
+                box.className = 'p-3 rounded-lg text-xs bg-slate-100 text-slate-600 border border-slate-300';
+                box.innerText = 'Select two different medications to run interaction analysis.';
+                return;
+            }
+
+            if ((d1 === 'Lisinopril' && d2 === 'Ibuprofen') || (d2 === 'Lisinopril' && d1 === 'Ibuprofen')) {
+                box.className = 'p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-300 space-y-1';
+                box.innerHTML = '<strong>Moderate/High Risk Interaction!</strong> Combining NSAIDs (Ibuprofen) with ACE inhibitors (Lisinopril) may decrease antihypertensive efficacy and increase risk of renal impairment.';
+            } else if ((d1 === 'Warfarin' && d2 === 'Ibuprofen') || (d2 === 'Warfarin' && d1 === 'Ibuprofen')) {
+                box.className = 'p-3 rounded-lg text-xs bg-rose-100 text-rose-900 border border-rose-400 font-bold space-y-1';
+                box.innerHTML = '<strong>DANGER / CONTRAINDICATED!</strong> Severe bleeding risk. NSAIDs significantly enhance anticoagulant activity of Warfarin.';
+            } else {
+                box.className = 'p-3 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-300';
+                box.innerHTML = '<strong>No Major Contraindications Found.</strong> Standard monitoring recommended.';
+            }
+        }
+
+        // Module 4: Medicare Eligibility
+        function calculateEligibility(e) {
+            e.preventDefault();
+            const age = parseInt(document.getElementById('eligibility-age').value);
+            const disability = document.getElementById('eligibility-disability').value;
+            const income = parseInt(document.getElementById('eligibility-income').value);
+
+            const result = document.getElementById('eligibility-result');
+            result.classList.remove('hidden');
+
+            let medicare = false;
+            let medicaid = false;
+
+            if (age >= 65 || disability === 'disabled' || disability === 'esrd') medicare = true;
+            if (income <= 20000) medicaid = true;
+
+            result.className = 'p-4 rounded-xl text-xs space-y-2 border bg-indigo-50 border-indigo-200 text-indigo-900';
+            result.innerHTML = `
+                <h4 class="font-bold text-sm">Eligibility Assessment Output:</h4>
+                <p>• <strong>Medicare:</strong> ${medicare ? '<span class="text-emerald-700 font-bold">ELIGIBLE</span> (Age 65+ or Qualifying Disability)' : '<span class="text-slate-500">Not Eligible based on age/disability</span>'}</p>
+                <p>• <strong>Medicaid / Dual-Eligible:</strong> ${medicaid ? '<span class="text-emerald-700 font-bold">LIKELY ELIGIBLE</span> (Income meets state threshold guidelines)' : '<span class="text-slate-500">Income exceeds standard thresholds</span>'}</p>
+            `;
+        }
+
+        // Module 5: Telehealth & Portal Subtabs
+        function switchPortalTab(sub) {
+            document.querySelectorAll('.portal-subtab').forEach(el => el.classList.add('hidden'));
+            document.getElementById('portal-' + sub).classList.remove('hidden');
+
+            document.querySelectorAll('.ptab-btn').forEach(b => {
+                b.className = 'ptab-btn px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 text-slate-600';
+            });
+            const activeBtn = document.getElementById('ptab-' + sub);
+            if (activeBtn) activeBtn.className = 'ptab-btn px-4 py-2 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200';
+        }
+
+        function simulateTelehealthCall() {
+            alert('Connecting to HIPAA-compliant WebRTC Video Room...\n\nDoctor Status: Online\nMicrophone & Camera: Verified Active.');
+        }
+
+        function requestRefill(drugName) {
+            alert('Refill request for ' + drugName + ' successfully submitted to PulseCare Central Pharmacy!');
+        }
+
+        // Module 6: Conditions
+        function renderConditions(list) {
+            const container = document.getElementById('conditions-grid');
+            container.innerHTML = '';
+            list.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-slate-800 text-base">${c.name}</h3>
+                        <span class="bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-0.5 rounded">${c.cat}</span>
+                    </div>
+                    <p class="text-xs text-slate-600">${c.summary}</p>
+                    <div class="bg-slate-50 p-3 rounded-xl border text-[11px] text-slate-600 space-y-1">
+                        <p class="font-bold text-slate-700">Living With ${c.name}:</p>
+                        <p>${c.lifestyle}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterConditions() {
+            const q = document.getElementById('condition-search').value.toLowerCase();
+            const filtered = conditionsDatabase.filter(c => c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q));
+            renderConditions(filtered);
+        }
+
+        // Module 7: Find Doctor
+        function renderDoctors(list) {
+            const container = document.getElementById('doctors-grid');
+            container.innerHTML = '';
+            list.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm">${d.name}</h3>
+                            <p class="text-xs font-semibold text-sky-600">${d.specialty}</p>
+                        </div>
+                        <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2 py-0.5 rounded flex items-center space-x-1">
+                            <span>★</span>
+                            <span>${d.rating}</span>
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-500 space-y-1">
+                        <p>📍 ${d.location}</p>
+                        <p>🗣 Languages: ${d.lang}</p>
+                        <p class="text-emerald-600 font-medium">✓ Accepts: ${d.insurance}</p>
+                    </div>
+                    <button onclick="openDocBookingModal('${d.name}')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2 rounded-xl transition">
+                        Book Appointment
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDoctors() {
+            const spec = document.getElementById('doc-filter-specialty').value;
+            const ins = document.getElementById('doc-filter-insurance').value;
+            const gen = document.getElementById('doc-filter-gender').value;
+
+            let filtered = doctorsDatabase;
+            if (spec !== 'all') filtered = filtered.filter(d => d.specialty === spec);
+            if (ins !== 'all') filtered = filtered.filter(d => d.insurance === ins);
+            if (gen !== 'all') filtered = filtered.filter(d => d.gender === gen);
+
+            renderDoctors(filtered);
+        }
+
+        function openDocBookingModal(docName) {
+            document.getElementById('doc-modal-name').value = docName;
+            document.getElementById('doc-booking-modal').classList.remove('hidden');
+        }
+
+        function closeDocBookingModal() {
+            document.getElementById('doc-booking-modal').classList.add('hidden');
+        }
+
+        function confirmDocBooking(e) {
+            e.preventDefault();
+            alert('Appointment request successfully sent to provider schedule!');
+            closeDocBookingModal();
+        }
+
+        // Module 8: Diagnostics & Cost
+        function renderDiagnosticGuides() {
+            const container = document.getElementById('diagnostic-guides-container');
+            container.innerHTML = '';
+            diagnosticGuides.forEach(g => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-slate-800 text-sm">${g.name}</h3>
+                        <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded">${g.duration}</span>
+                    </div>
+                    <p class="text-xs text-slate-600"><strong>Preparation / Fasting:</strong> ${g.prep}</p>
+                    <p class="text-xs text-slate-500"><strong>Recovery Timeline:</strong> ${g.recovery}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function calculateCostEstimate() {
+            const testSel = document.getElementById('cost-test-select');
+            const insSel = document.getElementById('cost-insurance-select');
+
+            const billed = parseFloat(testSel.options[testSel.selectedIndex].dataset.price);
+            const covPercent = parseFloat(insSel.value) / 100;
+
+            const insShare = billed * covPercent;
+            const patientPay = billed - insShare;
+
+            document.getElementById('cost-total-billed').innerText = '$' + billed.toFixed(2);
+            document.getElementById('cost-insurance-share').innerText = '-$' + insShare.toFixed(2);
+            document.getElementById('cost-patient-pay').innerText = '$' + patientPay.toFixed(2);
+        }
+
+        // Module 9: Mental Health Screener
+        function switchScreenerType() {
+            const type = document.getElementById('mental-screener-type').value;
+            const container = document.getElementById('screener-questions-list');
+            container.innerHTML = '';
+
+            mentalQuestionsPHQ9.forEach((q, idx) => {
+                const item = document.createElement('div');
+                item.className = 'space-y-1 border-b pb-3';
+                item.innerHTML = `
+                    <p class="font-medium text-slate-700">${idx + 1}. ${q}</p>
+                    <div class="flex space-x-3 text-[11px] text-slate-600">
+                        <label class="flex items-center space-x-1"><input type="radio" name="q_${idx}" value="0" checked><span>Not at all</span></label>
+                        <label class="flex items-center space-x-1"><input type="radio" name="q_${idx}" value="1"><span>Several days</span></label>
+                        <label class="flex items-center space-x-1"><input type="radio" name="q_${idx}" value="2"><span>More than half</span></label>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function calculateMentalScore() {
+            let total = 0;
+            mentalQuestionsPHQ9.forEach((_, idx) => {
+                const selected = document.querySelector(`input[name="q_${idx}"]:checked`);
+                if (selected) total += parseInt(selected.value);
+            });
+
+            const box = document.getElementById('screener-result-box');
+            box.classList.remove('hidden');
+
+            if (total <= 2) {
+                box.className = 'p-4 rounded-xl text-xs space-y-1 border bg-emerald-50 border-emerald-200 text-emerald-800';
+                box.innerHTML = `<strong>Minimal / Normal Score (${total}):</strong> No significant indicators detected. Keep prioritizing healthy sleep and stress relief routines.`;
+            } else {
+                box.className = 'p-4 rounded-xl text-xs space-y-1 border bg-amber-50 border-amber-200 text-amber-800';
+                box.innerHTML = `<strong>Mild to Moderate Score (${total}):</strong> Consider speaking with a licensed behavioral health professional or counselor for wellness strategies.`;
+            }
+        }
+
+        function startBoxBreathingDemo() {
+            const btn = document.getElementById('breathing-btn');
+            btn.innerText = 'Inhale (4s)...';
+            setTimeout(() => btn.innerText = 'Hold (4s)...', 4000);
+            setTimeout(() => btn.innerText = 'Exhale (4s)...', 8000);
+            setTimeout(() => btn.innerText = 'Hold (4s)...', 12000);
+            setTimeout(() => btn.innerText = 'Start Guided Breathing', 16000);
+        }
+
+        // Module 10: Wellness & Blog
+        function renderArticles(list) {
+            const container = document.getElementById('articles-grid');
+            container.innerHTML = '';
+            list.forEach(a => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2';
+                card.innerHTML = `
+                    <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">${a.cat}</span>
+                    <h4 class="font-bold text-slate-800 text-sm mt-1">${a.title}</h4>
+                    <p class="text-xs text-slate-600">${a.desc}</p>
+                    <span class="text-[10px] text-slate-400 block">${a.readTime}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterArticles(cat) {
+            if (cat === 'all') renderArticles(articlesDatabase);
+            else renderArticles(articlesDatabase.filter(a => a.cat === cat));
+        }
+
+        function generateChecklist() {
+            const age = document.getElementById('checklist-age').value;
+            const container = document.getElementById('checklist-items-container');
+            container.innerHTML = '';
+
+            let items = ['Annual Physical Exam & Blood Pressure', 'Lipid Panel Cholesterol Screen'];
+            if (age === '40s') items.push('Colorectal Cancer Screening', 'Diabetes A1c Blood Test', 'Mammogram / Prostate Health');
+            if (age === '60s') items.push('Bone Density DEXA Scan', 'Shingles & Pneumococcal Shots', 'Hearing & Vision Assessment');
+
+            items.forEach(item => {
+                const el = document.createElement('label');
+                el.className = 'flex items-center space-x-2 text-slate-700';
+                el.innerHTML = `<input type="checkbox" class="rounded border-slate-300 text-sky-600"> <span>${item}</span>`;
+                container.appendChild(el);
+            });
+        }
+
+        // Modals Logic
+        function openDisclaimerModal() { document.getElementById('disclaimer-modal').classList.remove('hidden'); }
+        function closeDisclaimerModal() { document.getElementById('disclaimer-modal').classList.add('hidden'); }
+        function togglePillIdentifierModal() { document.getElementById('pill-modal').classList.toggle('hidden'); }
+
+        function runPillIdentifier(e) {
+            e.preventDefault();
+            const shape = document.getElementById('pill-shape').value;
+            const color = document.getElementById('pill-color').value;
+            const resultBox = document.getElementById('pill-result-box');
+
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `
+                <div class="font-bold text-slate-800">Matching Pill Identified:</div>
+                <p><strong>Result:</strong> Lisinopril 10mg (${color.toUpperCase()}, ${shape.toUpperCase()})</p>
+                <p class="text-slate-500">Always consult your pharmacist or physician before taking unidentified pills.</p>
+            `;
+        }
+    </script>
+</body>
+</html>

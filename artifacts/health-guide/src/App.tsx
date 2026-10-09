@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, Route, Switch, useLocation } from 'wouter';
-import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
+import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
 
 const navItems = [
@@ -139,7 +140,7 @@ function Home() {
       <div className="topic-grid">
         {[
           { href: '/conditions', icon: <HeartPulse size={18} />, count: '03 guides', title: 'Conditions', copy: 'Plain-language introductions to common health conditions.' },
-          { href: '/medications', icon: <Pill size={18} />, count: '03 guides', title: 'Medications', copy: 'What common medicines are for, and where to find safety details.' },
+          { href: '/medications', icon: <Pill size={18} />, count: 'DailyMed catalog', title: 'Medications', copy: 'Search current product labels and read their original safety information.' },
           { href: '/articles', icon: <BookOpen size={18} />, count: '03 explainers', title: 'Articles', copy: 'Helpful context for readings, labels, and everyday questions.' },
         ].map((topic) => <Link key={topic.href} href={topic.href} className="topic-card" data-testid={`card-topic-${topic.title.toLowerCase()}`}>
           <div className="card-meta"><span>{topic.count}</span><span className="card-icon">{topic.icon}</span></div>
@@ -203,6 +204,126 @@ function Library({ kind }: { kind: Kind }) {
     <p className="result-count" aria-live="polite" data-testid="text-result-count">{filtered.length} {filtered.length === 1 ? 'guide' : 'guides'} in this collection</p>
     {filtered.length ? <div className="listing-grid">{filtered.map((entry) => <EntryCard key={entry.id} entry={entry} />)}</div> : <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>No guides found</h2><p>Try another word or choose a different topic.</p><button className="button-primary" onClick={() => { setQuery(''); setFilter('All topics'); setLocation(`/${collectionFor(kind)}`); }}>Clear search and filters</button></div>}
     <div style={{ paddingBottom: 50 }}><Disclaimer /></div>
+    <Footer />
+  </main>;
+}
+
+function MedicationCatalog() {
+  const [location, setLocation] = useLocation();
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const initialQuery = urlParams.get('q') || '';
+  const pageFromUrl = Number(urlParams.get('page') || '1');
+  const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+  const [searchValue, setSearchValue] = useState(initialQuery);
+  const params = useMemo(() => ({
+    ...(initialQuery.trim() ? { query: initialQuery.trim() } : {}),
+    page,
+  }), [initialQuery, page]);
+  const catalog = useGetMedicationLabels(params);
+  useEffect(() => { setSearchValue(initialQuery); }, [initialQuery]);
+
+  const goTo = (nextQuery: string, nextPage: number) => {
+    const search = new URLSearchParams();
+    if (nextQuery.trim()) search.set('q', nextQuery.trim());
+    if (nextPage > 1) search.set('page', String(nextPage));
+    setLocation(`/medications${search.size ? `?${search.toString()}` : ''}`);
+  };
+  const results = catalog.data;
+
+  return <main className="shell medication-catalog">
+    <div className="page-heading animate-arrive">
+      <div className="eyebrow">The library / medication labels</div>
+      <h1 className="serif">A label, for the product it belongs to.</h1>
+      <p>Search current U.S. human prescription and over-the-counter drug labels from DailyMed. Each result is an individual product label; products with the same ingredient may have different labels.</p>
+    </div>
+    <form className="catalog-search" role="search" onSubmit={(event) => { event.preventDefault(); goTo(searchValue, 1); }}>
+      <Search size={18} aria-hidden="true" />
+      <input aria-label="Search medication labels" value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Search a generic or brand name" data-testid="input-medication-catalog-search" />
+      {searchValue && <button className="catalog-clear" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }} aria-label="Clear search" data-testid="button-clear-medication-search">Clear</button>}
+      <button className="button-primary catalog-submit" type="submit" data-testid="button-search-medication-labels">Search labels <ArrowRight size={14} /></button>
+    </form>
+
+    <div className="catalog-note"><Pill size={16} /><span>Catalog records are product-specific, not a count of unique medicines or ingredients.</span></div>
+
+    {catalog.isLoading ? <section className="catalog-results" aria-label="Loading medication labels" aria-busy="true">
+      <div className="skeleton-line" /><div className="label-skeletons">{[1, 2, 3, 4, 5, 6].map((item) => <div className="label-skeleton" key={item}><i /><b /><span /></div>)}</div>
+    </section> : catalog.isError ? <div className="catalog-state catalog-error" role="alert">
+      <h2>Labels are not available right now.</h2><p>We could not reach the current DailyMed catalog. Please try again.</p>
+      <button type="button" className="button-primary" onClick={() => catalog.refetch()} data-testid="button-retry-medication-catalog">Try again <ArrowRight size={14} /></button>
+    </div> : results ? <>
+      <div className="catalog-summary" aria-live="polite" data-testid="text-medication-catalog-summary">
+        <p>{results.query ? <>Results for <strong>“{results.query}”</strong></> : <>Current U.S. human drug-label catalog</>}</p>
+        <span>{results.totalItems.toLocaleString()} {results.totalItems === 1 ? 'label record' : 'label records'}</span>
+      </div>
+      {results.items.length ? <div className="label-list" data-testid="list-medication-labels">
+        {results.items.map((label) => <Link key={label.setId} href={`/medications/${encodeURIComponent(label.setId)}`} className="label-row" data-testid={`link-medication-label-${label.setId}`}>
+          <span className="label-leading"><Pill size={18} strokeWidth={1.6} /></span>
+          <span className="label-main"><span className="label-title">{label.title}</span><span className="label-subtitle"><span className={`label-type ${label.labelType}`}>{label.labelType === 'otc' ? 'Over the counter' : 'Prescription'}</span><span>Published {formatDate(label.publishedDate)}</span></span></span>
+          <ArrowUpRight size={17} className="label-arrow" aria-hidden="true" />
+        </Link>)}
+      </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }}>Clear search <ArrowRight size={14} /></button></div>}
+      {results.totalPages > 1 && <nav className="pagination" aria-label="Medication label pages">
+        <button type="button" disabled={results.page <= 1} onClick={() => goTo(initialQuery, results.page - 1)} data-testid="button-medications-previous"><ChevronLeft size={16} /> Previous</button>
+        <span aria-live="polite">Page <strong>{results.page}</strong> of <strong>{results.totalPages}</strong></span>
+        <button type="button" disabled={results.page >= results.totalPages} onClick={() => goTo(initialQuery, results.page + 1)} data-testid="button-medications-next">Next <ChevronRight size={16} /></button>
+      </nav>}
+      <div className="catalog-updated"><CalendarDays size={14} /> Catalog last updated {formatDate(results.catalogUpdatedAt)} · Records from <a href="https://dailymed.nlm.nih.gov/dailymed/" target="_blank" rel="noreferrer">DailyMed <ExternalLink size={11} /></a></div>
+    </> : null}
+    <div className="catalog-disclaimer"><Disclaimer /></div>
+    <Footer />
+  </main>;
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(date);
+}
+
+function MedicationRecordRoute({ id }: { id: string }) {
+  const authoredEntry = getEntry(id);
+  if (authoredEntry?.kind === 'Medication') return <Detail collection="medications" id={id} />;
+  return <MedicationLabelDetailPage setId={id} />;
+}
+
+function MedicationLabelDetailPage({ setId }: { setId: string }) {
+  const queryKey = getGetMedicationLabelQueryKey(setId);
+  const labelQuery = useGetMedicationLabel(setId, { query: { enabled: !!setId, queryKey } });
+  const label = labelQuery.data;
+
+  if (labelQuery.isLoading) return <main className="shell medication-detail"><div className="detail-top"><div className="skeleton-line short" /><div className="skeleton-heading" /><div className="skeleton-line" /></div><div className="detail-layout"><article className="reading-content"><div className="label-detail-skeleton" /><div className="label-detail-skeleton" /></article></div></main>;
+  if (labelQuery.isError || !label) return <main className="shell medication-detail">
+    <div className="catalog-state detail-error" role="alert"><Pill size={25} /><h1 className="serif">This label could not be opened.</h1><p>It may no longer be in the catalog, or the service may be temporarily unavailable.</p><button type="button" className="button-primary" onClick={() => labelQuery.refetch()} data-testid="button-retry-medication-label">Try again <ArrowRight size={14} /></button><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Back to medication labels</Link></div><Footer />
+  </main>;
+
+  return <main className="shell medication-detail">
+    <div className="detail-top animate-arrive">
+      <div className="breadcrumbs"><Link href="/medications">Medication labels</Link><ChevronRight size={13} /><span>DailyMed product label</span></div>
+      <div className="detail-hero">
+        <div className="eyebrow"><Pill size={15} /> DailyMed · {label.labelType === 'otc' ? 'Over-the-counter label' : 'Prescription label'}</div>
+        <h1>{label.title}</h1>
+        <p>This is an individual product label. Labels can vary between products, even when they contain the same active ingredient.</p>
+        <div className="detail-meta"><span>Published {formatDate(label.publishedDate)}</span><span>·</span><span>Effective {label.labelEffectiveDate ? formatDate(label.labelEffectiveDate) : 'date not listed'}</span></div>
+      </div>
+    </div>
+    <div className="detail-layout">
+      <article className="reading-content medication-uses">
+        <div className="key-callout"><strong>Read this carefully.</strong><br />This label is general product information, not a personal recommendation. The right medicine and use depend on your health and the exact product. Follow its full labeling and ask a clinician or pharmacist about personal questions.</div>
+        <section>
+          <h2>Labeled uses</h2>
+          {label.usesText ? <div className="uses-copy">{label.usesText}</div> : <div className="uses-unavailable"><p>The current label did not expose a separate uses section in this view.</p><p>Open the original DailyMed label to review the complete product information, including uses, warnings, and directions.</p></div>}
+        </section>
+        <section><h2>What this page can and cannot tell you</h2><p>Label wording describes the product information supplied in the source record. It does not establish whether a medicine is appropriate for you, how to use it personally, or how it may interact with your health or other medicines.</p><p>For personal questions, speak with a clinician or pharmacist. Follow the product label and professional advice. For urgent or life-threatening symptoms, contact local emergency services.</p></section>
+        <Disclaimer />
+      </article>
+      <aside className="source-box" aria-label="Original medication label">
+        <h2>Original product source</h2>
+        <div className="source-item"><a href={label.sourceUrl} target="_blank" rel="noreferrer" data-testid="link-original-dailymed-label">Read the complete label</a><span>DailyMed · U.S. National Library of Medicine</span><a className="outlink" href={label.sourceUrl} target="_blank" rel="noreferrer">Open original source <ExternalLink size={12} /></a></div>
+        <p className="source-note">The original source is the authority for complete product information. This summary does not replace the label.</p>
+        <Link href="/sources" className="text-link" style={{ marginTop: 9, fontSize: 11 }}>How we cite sources <ArrowRight size={13} /></Link>
+      </aside>
+    </div>
+    <div className="detail-back"><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Browse medication labels</Link></div>
     <Footer />
   </main>;
 }
@@ -314,7 +435,7 @@ function SourcesPage() {
         return <article className="source-directory-card" key={source.id} data-testid={`source-row-${source.id}`}>
           <div><h2>{source.title}</h2><p>{source.organization} · {source.description}</p></div>
           <a className="button-primary" style={{ padding: '10px 14px', fontSize: 11 }} href={source.url} target="_blank" rel="noreferrer">Visit original <ExternalLink size={13} /></a>
-          <div className="source-tags" aria-label="Guides citing this source">{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
+          <div className="source-tags" aria-label="Guides citing this source">{source.id === 'dailymed' && <Link href="/medications">Browse medication labels</Link>}{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
         </article>;
       })}
     </div>
@@ -338,7 +459,8 @@ function App() {
       <Route path="/" component={Home} />
       <Route path="/articles" component={() => <Library kind="Article" />} />
       <Route path="/conditions" component={() => <Library kind="Condition" />} />
-      <Route path="/medications" component={() => <Library kind="Medication" />} />
+      <Route path="/medications" component={MedicationCatalog} />
+      <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/sources" component={SourcesPage} />
       <Route path="/search" component={SearchResults} />
       <Route path="/:collection/:id">{(params) => <Detail collection={params.collection} id={params.id} />}</Route>
