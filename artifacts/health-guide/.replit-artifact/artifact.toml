@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Health Guide"
+description = "A consumer health information website with evidence-based articles, a searchable condition library, medication guides, and transparent references to trusted medical sources."
+version = "1.0.0"
+id = "artifacts/health-guide"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25393
+
+[services.development]
+run = "pnpm --filter @workspace/health-guide run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/health-guide", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/health-guide/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25393"
+BASE_PATH = "/"
