@@ -6,3 +6,4 @@
 - [Community blog scope](community-blog.md) — positive West Des Moines, Iowa coverage; verify local claims and distinguish plans, events, recaps, and ongoing resources.
 - [Provider directory accuracy](provider-directory.md) — CMS searches can match secondary practices; distinguish local practice addresses from mailing addresses and credential verification.
 - [Health Guide audience](health-guide-audience.md) — for anyone seeking medical-condition resources or community information; user-selected local searches are not limited to West Des Moines.
+- [Brace expansion security](brace-expansion-security.md) — preserve legacy Tailwind glob behavior; depth-guarded replacement is intentional while upstream lacks a fix.
