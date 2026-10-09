@@ -1,4 +1,4 @@
-import { Router, type IRouter, type Response } from "express";
+import { Router, type IRouter, type Response as ExpressResponse } from "express";
 import {
   GetMedicationLabelParams,
   GetMedicationLabelResponse,
@@ -14,6 +14,13 @@ const PAGE_SIZE_PER_TYPE = 20;
 const HUMAN_LABEL_TYPES = {
   "34391-3": "prescription",
   "34390-5": "otc",
+  "75031-5": "compounded",
+  "53404-0": "vaccine",
+  "60683-0": "plasma-derivative",
+  "60684-8": "cellular-therapy",
+  "53408-1": "licensed-cell-product",
+  "53405-7": "allergenic",
+  "60682-2": "standardized-allergenic",
 } as const;
 
 type LabelType = (typeof HUMAN_LABEL_TYPES)[keyof typeof HUMAN_LABEL_TYPES];
@@ -32,6 +39,11 @@ interface DailyMedPage {
     db_published_date?: string;
   };
 }
+
+// A short successful-response cache keeps catalog paging from repeating all
+// category-count requests. Failed requests are never served as catalog data.
+const pageCache = new Map<string, { expiresAt: number; value: DailyMedPage }>();
+const pendingPages = new Map<string, Promise<DailyMedPage>>();
 
 class DailyMedError extends Error {
   constructor(
@@ -62,6 +74,21 @@ function readPositiveInteger(value: string | number | undefined): number {
 }
 
 async function readDailyMedPage(url: URL): Promise<DailyMedPage> {
+  const key = url.toString();
+  const cached = pageCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  const pending = pendingPages.get(key);
+  if (pending) return pending;
+  const request = loadDailyMedPage(url).then((value) => {
+    if (pageCache.size >= 200) pageCache.delete(pageCache.keys().next().value!);
+    pageCache.set(key, { expiresAt: Date.now() + 5 * 60_000, value });
+    return value;
+  }).finally(() => pendingPages.delete(key));
+  pendingPages.set(key, request);
+  return request;
+}
+
+async function loadDailyMedPage(url: URL): Promise<DailyMedPage> {
   const response = await fetchDailyMed(url);
   if (!response.ok) {
     throw new DailyMedError(502, "DailyMed did not return medication catalog data.");
@@ -93,7 +120,7 @@ function listUrl(
   return url;
 }
 
-function errorResponse(res: Response, error: unknown) {
+function errorResponse(res: ExpressResponse, error: unknown) {
   if (error instanceof DailyMedError) {
     return res.status(error.status).json({ message: error.message });
   }
@@ -117,39 +144,61 @@ router.get("/medication-labels", async (req, res) => {
   }
 
   try {
-    const [prescriptionPage, otcPage] = await Promise.all([
-      readDailyMedPage(listUrl("34391-3", query, page)),
-      readDailyMedPage(listUrl("34390-5", query, page)),
-    ]);
-    const indexedPages = [
-      { page: prescriptionPage, labelType: "prescription" as const },
-      { page: otcPage, labelType: "otc" as const },
-    ];
-    if (indexedPages.some(({ page: result }) =>
-      result.data!.some((entry) => !entry.setid || !entry.title || !entry.published_date),
-    )) {
-      throw new DailyMedError(502, "DailyMed returned a catalog entry without required label information.");
-    }
-    const items = indexedPages.flatMap(({ page: result, labelType }) =>
-      result.data!.map((entry) => ({
-          setId: entry.setid,
-          title: entry.title,
-          publishedDate: entry.published_date,
-          labelType,
-          sourceUrl: `${DAILYMED_LABEL}${entry.setid}`,
-        })),
+    const categories = await Promise.all(
+      (Object.keys(HUMAN_LABEL_TYPES) as (keyof typeof HUMAN_LABEL_TYPES)[]).map(async (doctype) => {
+        const firstPage = await readDailyMedPage(listUrl(doctype, query, 1));
+        return { doctype, firstPage, count: readPositiveInteger(firstPage.metadata?.total_elements) };
+      }),
     );
-    const totalItems = indexedPages.reduce(
-      (total, { page: result }) => total + readPositiveInteger(result.metadata?.total_elements),
+    const totalItems = categories.reduce(
+      (total, category) => total + category.count,
       0,
     );
-    const totalPages = Math.max(
-      1,
-      ...indexedPages.map(({ page: result }) => readPositiveInteger(result.metadata?.total_pages)),
-    );
-    const catalogUpdatedAt =
-      prescriptionPage.metadata?.db_published_date ||
-      otcPage.metadata?.db_published_date;
+    const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE_PER_TYPE));
+    page = Math.min(page, totalPages);
+    let offset = (page - 1) * PAGE_SIZE_PER_TYPE;
+    let remaining = PAGE_SIZE_PER_TYPE;
+    const items = [];
+    for (const category of categories) {
+      if (remaining === 0) break;
+      if (offset >= category.count) {
+        offset -= category.count;
+        continue;
+      }
+      const take = Math.min(remaining, category.count - offset);
+      let collected = 0;
+      let sourcePage = Math.floor(offset / PAGE_SIZE_PER_TYPE) + 1;
+      let sourceOffset = offset % PAGE_SIZE_PER_TYPE;
+      while (collected < take) {
+        const result = sourcePage === 1
+          ? category.firstPage
+          : await readDailyMedPage(listUrl(category.doctype, query, sourcePage));
+        const slice = result.data!.slice(sourceOffset, sourceOffset + take - collected);
+        if (slice.length === 0) {
+          throw new DailyMedError(502, "DailyMed's catalog changed while paging. Please refresh and try again.");
+        }
+        for (const entry of slice) {
+          if (!entry.setid || !entry.title || !entry.published_date) {
+            throw new DailyMedError(502, "DailyMed returned an incomplete label record.");
+          }
+          items.push({
+            setId: entry.setid,
+            title: entry.title,
+            publishedDate: entry.published_date,
+            labelType: HUMAN_LABEL_TYPES[category.doctype],
+            sourceUrl: `${DAILYMED_LABEL}${entry.setid}`,
+          });
+        }
+        collected += slice.length;
+        sourcePage += 1;
+        sourceOffset = 0;
+      }
+      remaining -= take;
+      offset = 0;
+    }
+    const catalogUpdatedAt = categories.find((category) =>
+      category.firstPage.metadata?.db_published_date,
+    )?.firstPage.metadata?.db_published_date;
     if (!catalogUpdatedAt) {
       throw new DailyMedError(502, "DailyMed did not include its catalog update date.");
     }
@@ -158,7 +207,7 @@ router.get("/medication-labels", async (req, res) => {
       items,
       query: query ?? null,
       page,
-      pageSize: PAGE_SIZE_PER_TYPE * Object.keys(HUMAN_LABEL_TYPES).length,
+      pageSize: PAGE_SIZE_PER_TYPE,
       totalItems,
       totalPages,
       catalogUpdatedAt,
@@ -227,17 +276,19 @@ function sectionText(xml: string): string | null {
   const section = extractElement(xml, sectionStart, "section");
   if (!section) return null;
 
-  const textStart = section.search(/<text\b/i);
-  if (textStart < 0) return null;
-  const textElement = extractElement(section, textStart, "text");
-  if (!textElement) return null;
-
-  const plainText = textElement
-    .replace(/<(?:br|\/?paragraph|\/?list|\/?item|\/?tr|\/?table|\/?td|\/?th|\/?caption)\b[^>]*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/[\t\f\v ]+/g, " ")
+  // SPL highlights repeat abbreviated uses in an excerpt. Keep the full label
+  // text and nested indication sections instead of duplicating that summary.
+  const fullSection = section.replace(/<excerpt\b[^>]*>[\s\S]*?<\/excerpt>/gi, "");
+  if (!/<text\b/i.test(fullSection)) return null;
+  // Include all nested indication subsections, not only the first text block.
+  const plainText = fullSection
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, "")
+    .replace(/\s+/g, " ")
+    .replace(/<(?:br|\/?paragraph|\/?list|\/?item|\/?tr|\/?table|\/?title|\/?caption)\b[^>]*\/?>/gi, "\n")
+    .replace(/<\/?(?:td|th)\b[^>]*>/gi, " | ")
+    .replace(/<[^>]+>/g, "")
     .split(/\r?\n/)
-    .map((line) => decodeXmlEntities(line).trim())
+    .map((line) => decodeXmlEntities(line).replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .join("\n");
 

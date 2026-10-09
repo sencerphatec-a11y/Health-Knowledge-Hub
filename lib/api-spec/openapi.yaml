@@ -31,7 +31,7 @@ paths:
       operationId: getMedicationLabels
       tags: [medications]
       summary: Search current U.S. human drug labels
-      description: Returns paginated DailyMed prescription and OTC label records.
+      description: Returns current DailyMed human prescription, OTC, compounded medicine, vaccine, allergen, plasma derivative, and cellular therapy label records.
       parameters:
         - name: query
           in: query
@@ -106,6 +106,13 @@ components:
       enum:
         - prescription
         - otc
+        - compounded
+        - vaccine
+        - plasma-derivative
+        - cellular-therapy
+        - licensed-cell-product
+        - allergenic
+        - standardized-allergenic
     MedicationLabel:
       type: object
       properties:

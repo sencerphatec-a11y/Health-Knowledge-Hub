@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, Route, Switch, useLocation } from 'wouter';
+import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
 import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
@@ -16,8 +16,9 @@ const entryHref = (entry: LibraryEntry) => `/${collectionFor(entry.kind)}/${entr
 
 function usePageMetadata() {
   const [location] = useLocation();
+  const queryString = useSearch();
   useEffect(() => {
-    const [pathname, queryString = ''] = location.split('?');
+    const pathname = location;
     const segments = pathname.split('/').filter(Boolean);
     const entry = segments.length === 2 ? getEntry(segments[1]) : undefined;
     const query = new URLSearchParams(queryString).get('q')?.trim();
@@ -37,7 +38,10 @@ function usePageMetadata() {
       description = 'Explore plain-language guides to common health conditions, with trusted sources and reminders to discuss personal concerns with a clinician.';
     } else if (pathname === '/medications') {
       title = 'Medication guides & medicine safety | Health Guide';
-      description = 'Understand common medicines and their safety information. Find original drug information and follow the label and professional advice.';
+      description = 'Search current U.S. human medication and biologic product labels, read labeled uses, and follow direct DailyMed citations.';
+    } else if (pathname.startsWith('/medications/')) {
+      title = 'Medication label and labeled uses | Health Guide';
+      description = 'Read the product-specific labeled uses and find the complete original DailyMed label, warnings, and directions.';
     } else if (pathname === '/sources') {
       title = 'Health Guide sources & citations | MedlinePlus, CDC, FDA';
       description = 'See the original public-health and medicine sources behind Health Guide articles, condition pages, and medication guides.';
@@ -66,7 +70,7 @@ function usePageMetadata() {
     updateMeta('meta[property="og:type"]', { property: 'og:type', content: type });
     updateMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: title });
     updateMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: description });
-  }, [location]);
+  }, [location, queryString]);
 }
 
 function Header() {
@@ -178,8 +182,8 @@ function EntryCard({ entry }: { entry: LibraryEntry }) {
 }
 
 function Library({ kind }: { kind: Kind }) {
-  const [location, setLocation] = useLocation();
-  const params = new URLSearchParams(location.split('?')[1] || '');
+  const [, setLocation] = useLocation();
+  const params = new URLSearchParams(useSearch());
   const initialQuery = params.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
   const [filter, setFilter] = useState('All topics');
@@ -209,8 +213,8 @@ function Library({ kind }: { kind: Kind }) {
 }
 
 function MedicationCatalog() {
-  const [location, setLocation] = useLocation();
-  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const [, setLocation] = useLocation();
+  const urlParams = new URLSearchParams(useSearch());
   const initialQuery = urlParams.get('q') || '';
   const pageFromUrl = Number(urlParams.get('page') || '1');
   const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
@@ -233,17 +237,17 @@ function MedicationCatalog() {
   return <main className="shell medication-catalog">
     <div className="page-heading animate-arrive">
       <div className="eyebrow">The library / medication labels</div>
-      <h1 className="serif">A label, for the product it belongs to.</h1>
-      <p>Search current U.S. human prescription and over-the-counter drug labels from DailyMed. Each result is an individual product label; products with the same ingredient may have different labels.</p>
+      <h1 className="serif">Medications and their uses.</h1>
+      <p>Search current U.S. human drug and biologic labels from DailyMed—including prescription medicines, over-the-counter products, vaccines, and other therapies. Select a product to read its labeled uses and original source.</p>
     </div>
     <form className="catalog-search" role="search" onSubmit={(event) => { event.preventDefault(); goTo(searchValue, 1); }}>
       <Search size={18} aria-hidden="true" />
-      <input aria-label="Search medication labels" value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Search a generic or brand name" data-testid="input-medication-catalog-search" />
+      <input aria-label="Search medication labels" maxLength={100} value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Search a generic or brand name" data-testid="input-medication-catalog-search" />
       {searchValue && <button className="catalog-clear" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }} aria-label="Clear search" data-testid="button-clear-medication-search">Clear</button>}
       <button className="button-primary catalog-submit" type="submit" data-testid="button-search-medication-labels">Search labels <ArrowRight size={14} /></button>
     </form>
 
-    <div className="catalog-note"><Pill size={16} /><span>Catalog records are product-specific, not a count of unique medicines or ingredients.</span></div>
+    <div className="catalog-note"><Pill size={16} /><span>Records are product-specific, not unique medicines. DailyMed inclusion does not establish FDA approval or effectiveness; some labels are for unapproved or homeopathic products. Animal drugs, devices, and manufacturing ingredients are excluded.</span></div>
 
     {catalog.isLoading ? <section className="catalog-results" aria-label="Loading medication labels" aria-busy="true">
       <div className="skeleton-line" /><div className="label-skeletons">{[1, 2, 3, 4, 5, 6].map((item) => <div className="label-skeleton" key={item}><i /><b /><span /></div>)}</div>
@@ -258,7 +262,7 @@ function MedicationCatalog() {
       {results.items.length ? <div className="label-list" data-testid="list-medication-labels">
         {results.items.map((label) => <Link key={label.setId} href={`/medications/${encodeURIComponent(label.setId)}`} className="label-row" data-testid={`link-medication-label-${label.setId}`}>
           <span className="label-leading"><Pill size={18} strokeWidth={1.6} /></span>
-          <span className="label-main"><span className="label-title">{label.title}</span><span className="label-subtitle"><span className={`label-type ${label.labelType}`}>{label.labelType === 'otc' ? 'Over the counter' : 'Prescription'}</span><span>Published {formatDate(label.publishedDate)}</span></span></span>
+          <span className="label-main"><span className="label-title">{label.title}</span><span className="label-subtitle"><span className={`label-type ${label.labelType}`}>{labelTypeName(label.labelType)}</span><span>Published {formatDate(label.publishedDate)}</span><span>View labeled uses</span></span></span>
           <ArrowUpRight size={17} className="label-arrow" aria-hidden="true" />
         </Link>)}
       </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }}>Clear search <ArrowRight size={14} /></button></div>}
@@ -278,6 +282,16 @@ function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(date);
+}
+
+function labelTypeName(type: string) {
+  const names: Record<string, string> = {
+    prescription: 'Prescription', otc: 'Over the counter', compounded: 'Compounded medicine',
+    vaccine: 'Vaccine', 'plasma-derivative': 'Plasma-derived medicine',
+    'cellular-therapy': 'Cellular therapy', 'licensed-cell-product': 'Licensed cell product',
+    allergenic: 'Allergy product', 'standardized-allergenic': 'Standardized allergy product',
+  };
+  return names[type] || type;
 }
 
 function MedicationRecordRoute({ id }: { id: string }) {
@@ -300,7 +314,7 @@ function MedicationLabelDetailPage({ setId }: { setId: string }) {
     <div className="detail-top animate-arrive">
       <div className="breadcrumbs"><Link href="/medications">Medication labels</Link><ChevronRight size={13} /><span>DailyMed product label</span></div>
       <div className="detail-hero">
-        <div className="eyebrow"><Pill size={15} /> DailyMed · {label.labelType === 'otc' ? 'Over-the-counter label' : 'Prescription label'}</div>
+        <div className="eyebrow"><Pill size={15} /> DailyMed · {labelTypeName(label.labelType)}</div>
         <h1>{label.title}</h1>
         <p>This is an individual product label. Labels can vary between products, even when they contain the same active ingredient.</p>
         <div className="detail-meta"><span>Published {formatDate(label.publishedDate)}</span><span>·</span><span>Effective {label.labelEffectiveDate ? formatDate(label.labelEffectiveDate) : 'date not listed'}</span></div>
@@ -319,7 +333,7 @@ function MedicationLabelDetailPage({ setId }: { setId: string }) {
       <aside className="source-box" aria-label="Original medication label">
         <h2>Original product source</h2>
         <div className="source-item"><a href={label.sourceUrl} target="_blank" rel="noreferrer" data-testid="link-original-dailymed-label">Read the complete label</a><span>DailyMed · U.S. National Library of Medicine</span><a className="outlink" href={label.sourceUrl} target="_blank" rel="noreferrer">Open original source <ExternalLink size={12} /></a></div>
-        <p className="source-note">The original source is the authority for complete product information. This summary does not replace the label.</p>
+        <p className="source-note">Uses are extracted from the source label, including its indication subsections. This view does not replace the complete label. DailyMed inclusion is not proof of FDA approval or effectiveness.</p>
         <Link href="/sources" className="text-link" style={{ marginTop: 9, fontSize: 11 }}>How we cite sources <ArrowRight size={13} /></Link>
       </aside>
     </div>
@@ -381,8 +395,8 @@ function Detail({ collection, id }: { collection: string; id: string }) {
 }
 
 function SearchResults() {
-  const [location, setLocation] = useLocation();
-  const query = new URLSearchParams(location.split('?')[1] || '').get('q')?.trim() || '';
+  const [, setLocation] = useLocation();
+  const query = new URLSearchParams(useSearch()).get('q')?.trim() || '';
   const normalizedQuery = query.toLowerCase();
   const results = entries.filter((entry) => {
     const sourcesForEntry = entry.sourceIds.map((sourceId) => {

@@ -15,6 +15,13 @@ export type MedicationLabelType = typeof MedicationLabelType[keyof typeof Medica
 export const MedicationLabelType = {
   prescription: 'prescription',
   otc: 'otc',
+  compounded: 'compounded',
+  vaccine: 'vaccine',
+  'plasma-derivative': 'plasma-derivative',
+  'cellular-therapy': 'cellular-therapy',
+  'licensed-cell-product': 'licensed-cell-product',
+  allergenic: 'allergenic',
+  'standardized-allergenic': 'standardized-allergenic',
 } as const;
 
 export interface MedicationLabel {

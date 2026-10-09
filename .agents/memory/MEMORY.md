@@ -1,0 +1,1 @@
+- [Medication catalog scope](medication-catalog.md) — use current human finished-product labels, including biologics; separate labeled claims from approval and evidence.

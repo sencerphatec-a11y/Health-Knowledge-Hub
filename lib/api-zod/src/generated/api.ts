@@ -18,7 +18,7 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Returns paginated DailyMed prescription and OTC label records.
+ * Returns current DailyMed human prescription, OTC, compounded medicine, vaccine, allergen, plasma derivative, and cellular therapy label records.
  * @summary Search current U.S. human drug labels
  */
 export const getMedicationLabelsQueryQueryMax = 100;
@@ -37,7 +37,7 @@ export const GetMedicationLabelsResponse = zod.object({
   "setId": zod.string().uuid(),
   "title": zod.string(),
   "publishedDate": zod.string(),
-  "labelType": zod.enum(['prescription', 'otc']),
+  "labelType": zod.enum(['prescription', 'otc', 'compounded', 'vaccine', 'plasma-derivative', 'cellular-therapy', 'licensed-cell-product', 'allergenic', 'standardized-allergenic']),
   "sourceUrl": zod.string().url()
 })),
   "query": zod.string().nullable(),
@@ -60,7 +60,7 @@ export const GetMedicationLabelResponse = zod.object({
   "setId": zod.string().uuid(),
   "title": zod.string(),
   "publishedDate": zod.string(),
-  "labelType": zod.enum(['prescription', 'otc']),
+  "labelType": zod.enum(['prescription', 'otc', 'compounded', 'vaccine', 'plasma-derivative', 'cellular-therapy', 'licensed-cell-product', 'allergenic', 'standardized-allergenic']),
   "sourceUrl": zod.string().url()
 }).and(zod.object({
   "labelEffectiveDate": zod.string().nullable(),

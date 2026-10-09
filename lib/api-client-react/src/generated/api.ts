@@ -144,7 +144,7 @@ export const getGetMedicationLabelsUrl = (params?: GetMedicationLabelsParams,) =
 }
 
 /**
- * Returns paginated DailyMed prescription and OTC label records.
+ * Returns current DailyMed human prescription, OTC, compounded medicine, vaccine, allergen, plasma derivative, and cellular therapy label records.
  * @summary Search current U.S. human drug labels
  */
 export const getMedicationLabels = async (params?: GetMedicationLabelsParams, options?: Parameters<typeof customFetch>[1]): Promise<MedicationCatalogPage> => {
