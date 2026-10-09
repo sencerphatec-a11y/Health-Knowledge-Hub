@@ -6,6 +6,9 @@ import ResourcesPage from './pages/ResourcesPage';
 import SymptomCheckerPage from './pages/SymptomCheckerPage';
 import GiveBackPage from './pages/GiveBackPage';
 import FindDoctorPage from './pages/FindDoctorPage';
+import FindFoodPage from './pages/FindFoodPage';
+import HousingAssistancePage from './pages/HousingAssistancePage';
+import HomeAboutSection from './components/HomeAboutSection';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
 import PulseCarePage from './pages/PulseCarePage';
@@ -16,6 +19,7 @@ import { articleSelectionChecked, recentArticleCount, formatArticleDate } from '
 import './article-library.css';
 
 const navItems = [
+  { label: 'Home', href: '/' },
   { label: 'Articles', href: '/articles' },
   { label: 'Blog', href: '/blog' },
   { label: 'Symptom Checker', href: '/symptom-checker' },
@@ -23,6 +27,8 @@ const navItems = [
   { label: 'Find a Doctor', href: '/find-a-doctor' },
   { label: 'Medications', href: '/medications' },
   { label: 'Resources', href: '/resources' },
+  { label: 'Find Food', href: '/find-food' },
+  { label: 'Housing Assistance', href: '/housing-assistance' },
   { label: 'Give Back', href: '/give-back' },
   { label: 'Vaccines', href: '/vaccines' },
   { label: 'GoodRx', href: '/goodrx' },
@@ -41,8 +47,8 @@ function usePageMetadata() {
     const entry = segments.length === 2 ? getEntry(segments[1]) : undefined;
     const communityPost = segments[0] === 'blog' && segments.length === 2 ? getCommunityPost(segments[1]) : undefined;
     const query = new URLSearchParams(queryString).get('q')?.trim();
-    let title = 'Trusted health information, articles & guides | Health Guide';
-    let description = 'Find clear, evidence-based health articles, condition guides, and medication information, with every topic linked to trusted medical sources.';
+    let title = 'Health information & community resources | Health Guide';
+    let description = 'Find medical-condition and medication information, food and housing assistance directories, and community resources, with links to original sources.';
     let type = 'website';
 
     if (communityPost) {
@@ -88,6 +94,12 @@ function usePageMetadata() {
     } else if (pathname === '/give-back') {
       title = 'Donate & volunteer in West Des Moines, Iowa | Health Guide';
       description = 'Find nine source-linked ways to help West Des Moines neighbors through donations and volunteering, with official next steps, service areas, and participation requirements.';
+    } else if (pathname === '/find-food') {
+      title = 'Find food pantries & meal programs | Health Guide';
+      description = 'Find food-pantry search links by city and state or ZIP code, and learn about Mom’s Meals, Meals from the Heartland, and Meals on Wheels, including eligibility, costs, and official sources.';
+    } else if (pathname === '/housing-assistance') {
+      title = 'Housing & rental assistance near you | Health Guide';
+      description = 'Find local housing assistance directories, official HUD housing-agency contacts by state, Section 8 information, emergency rent help, shelter resources, and counseling.';
     } else if (pathname === '/vaccines') {
       title = 'Vaccine information & CDC schedules | Health Guide';
       description = 'Search source-linked vaccine fact sheets from the CDC VIS index and read educational schedule summaries with links to full CDC schedules.';
@@ -127,6 +139,7 @@ function usePageMetadata() {
 
 function Header() {
   const [location] = useLocation();
+  const active = (href: string) => href === '/' ? location === '/' : location === href || location.startsWith(`${href}/`);
   return <>
     <header className="shell topbar">
       <Link href="/" className="brand" aria-label="Health Guide home" data-testid="link-home-brand">
@@ -134,12 +147,12 @@ function Header() {
         <span>health guide</span>
       </Link>
       <nav className="nav-links" aria-label="Main navigation">
-        {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`nav-${item.href.slice(1)}`}>{item.label}</Link>)}
+        {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={active(item.href) ? 'page' : undefined} data-testid={`nav-${item.href === '/' ? 'home' : item.href.slice(1)}`}>{item.label}</Link>)}
       </nav>
       <Link href="/sources" className="text-link" style={{ fontSize: 12 }} data-testid="link-source-standard">Our standard <ArrowUpRight size={14} /></Link>
     </header>
     <nav className="shell nav-mobile" aria-label="Main navigation">
-      {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`mobile-nav-${item.href.slice(1)}`}>{item.label}</Link>)}
+      {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={active(item.href) ? 'page' : undefined} data-testid={`mobile-nav-${item.href === '/' ? 'home' : item.href.slice(1)}`}>{item.label}</Link>)}
     </nav>
   </>;
 }
@@ -183,6 +196,7 @@ function Home() {
         <div className="hero-actions">
           <Link href="/articles" className="button-primary" data-testid="link-browse-articles">Browse the library <ArrowRight size={15} /></Link>
           <Link href="/sources" className="text-link" data-testid="link-view-sources">See our sources <ArrowUpRight size={15} /></Link>
+          <a href="#about" className="text-link" data-testid="link-about-home">About this website <ArrowRight size={15} /></a>
         </div>
       </div>
       <div className="hero-art" aria-label="Illustration of a quiet sprouting branch" role="img">
@@ -191,6 +205,7 @@ function Home() {
       </div>
     </div>
     <div className="shell"><SearchField home onSearch={doSearch} /></div>
+    <HomeAboutSection />
     <section className="shell section">
       <div className="section-head"><div><div className="eyebrow">Start with a topic</div><h2 className="serif">A useful place to begin.</h2></div><p>Explore our library of common conditions, medicines, and the questions people ask about them.</p></div>
       <div className="topic-grid">
@@ -564,6 +579,8 @@ function App() {
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
       <Route path="/resources">{() => <><ResourcesPage /><Footer /></>}</Route>
+      <Route path="/find-food">{() => <><FindFoodPage /><Footer /></>}</Route>
+      <Route path="/housing-assistance">{() => <><HousingAssistancePage /><Footer /></>}</Route>
       <Route path="/give-back">{() => <><GiveBackPage /><Footer /></>}</Route>
       <Route path="/vaccines">{() => <><VaccinesPage /><Footer /></>}</Route>
       <Route path="/goodrx">{() => <><GoodRxPage /><Footer /></>}</Route>
