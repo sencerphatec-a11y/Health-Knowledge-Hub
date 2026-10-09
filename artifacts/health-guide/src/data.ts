@@ -1,4 +1,5 @@
 import { conditionEntries, conditionSources } from './data/conditions';
+import { resourceSources } from './data/support-resources';
 
 export type Kind = 'Article' | 'Condition' | 'Medication';
 
@@ -27,6 +28,7 @@ export interface LibraryEntry {
 }
 
 export const sources: Source[] = [
+  ...resourceSources,
   ...conditionSources,
   { id: 'med-hbp', title: 'High Blood Pressure', organization: 'MedlinePlus', url: 'https://medlineplus.gov/highbloodpressure.html', description: 'Overview of high blood pressure, measurement, and care.' },
   { id: 'med-asthma', title: 'Asthma', organization: 'MedlinePlus', url: 'https://medlineplus.gov/asthma.html', description: 'Information about asthma symptoms, causes, and management.' },

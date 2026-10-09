@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
 import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
+import ResourcesPage from './pages/ResourcesPage';
+import VaccinesPage from './pages/VaccinesPage';
+import GoodRxPage from './pages/GoodRxPage';
 import PulseCarePage from './pages/PulseCarePage';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
 
@@ -10,6 +13,9 @@ const navItems = [
   { label: 'Conditions', href: '/conditions' },
   { label: 'Medications', href: '/medications' },
   { label: 'PulseCare', href: '/pulsecare' },
+  { label: 'Resources', href: '/resources' },
+  { label: 'Vaccines', href: '/vaccines' },
+  { label: 'GoodRx', href: '/goodrx' },
   { label: 'Sources', href: '/sources' },
 ];
 const collectionFor = (kind: Kind) => kind === 'Article' ? 'articles' : kind === 'Condition' ? 'conditions' : 'medications';
@@ -47,6 +53,15 @@ function usePageMetadata() {
     } else if (pathname === '/pulsecare') {
       title = 'PulseCare patient portal prototype | Health Guide';
       description = 'Explore PulseCare, an educational patient portal prototype with sample data. Appointments, refills, payments, and telehealth are not live.';
+    } else if (pathname === '/resources') {
+      title = 'Eldercare, patient advocacy & government resources | Health Guide';
+      description = 'Find official Eldercare Locator, Patient Advocate Foundation, and USA.gov resources, with outbound links and clear limits.';
+    } else if (pathname === '/vaccines') {
+      title = 'Vaccine information & CDC schedules | Health Guide';
+      description = 'Search source-linked vaccine fact sheets from the CDC VIS index and read educational schedule summaries with links to full CDC schedules.';
+    } else if (pathname === '/goodrx') {
+      title = 'GoodRx prescription coupons explained | Health Guide';
+      description = 'Learn how the GoodRx commercial coupon service works. GoodRx is not insurance, and savings are not guaranteed.';
     } else if (pathname === '/sources') {
       title = 'Health Guide sources & citations | MedlinePlus, CDC, FDA';
       description = 'See the original public-health and medicine sources behind Health Guide articles, condition pages, and medication guides.';
@@ -101,7 +116,7 @@ function Footer() {
   return <footer className="footer">
     <div className="shell footer-inner">
       <div><div className="brand" style={{ fontSize: 15 }}><span className="brand-mark" style={{ width: 28, height: 28 }}><HeartPulse size={15} /></span><span>health guide</span></div><p style={{ margin: '9px 0 0' }}>Clear answers. Credible sources. No diagnosis.</p></div>
-      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/pulsecare">PulseCare</Link><Link href="/sources">Sources</Link></div>
+      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/pulsecare">PulseCare</Link><Link href="/resources">Resources</Link><Link href="/vaccines">Vaccines</Link><Link href="/goodrx">GoodRx</Link><Link href="/sources">Sources</Link></div>
       <span>Editorial source check: October 2026</span>
     </div>
   </footer>;
@@ -491,6 +506,9 @@ function App() {
       <Route path="/medications" component={MedicationCatalog} />
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
+      <Route path="/resources">{() => <><ResourcesPage /><Footer /></>}</Route>
+      <Route path="/vaccines">{() => <><VaccinesPage /><Footer /></>}</Route>
+      <Route path="/goodrx">{() => <><GoodRxPage /><Footer /></>}</Route>
       <Route path="/sources" component={SourcesPage} />
       <Route path="/search" component={SearchResults} />
       <Route path="/:collection/:id">{(params) => <Detail collection={params.collection} id={params.id} />}</Route>
