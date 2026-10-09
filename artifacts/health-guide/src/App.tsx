@@ -3,18 +3,25 @@ import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
 import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
 import ResourcesPage from './pages/ResourcesPage';
+import SymptomCheckerPage from './pages/SymptomCheckerPage';
+import GiveBackPage from './pages/GiveBackPage';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
 import PulseCarePage from './pages/PulseCarePage';
+import BlogPage, { BlogPostPage } from './pages/BlogPage';
+import { getCommunityPost } from './data/community-blog';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
 import { articleSelectionChecked, recentArticleCount, formatArticleDate } from './data/recent-articles';
 import './article-library.css';
 
 const navItems = [
   { label: 'Articles', href: '/articles' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Symptom Checker', href: '/symptom-checker' },
   { label: 'Conditions', href: '/conditions' },
   { label: 'Medications', href: '/medications' },
   { label: 'Resources', href: '/resources' },
+  { label: 'Give Back', href: '/give-back' },
   { label: 'Vaccines', href: '/vaccines' },
   { label: 'GoodRx', href: '/goodrx' },
   { label: 'Sources', href: '/sources' },
@@ -30,12 +37,23 @@ function usePageMetadata() {
     const pathname = location;
     const segments = pathname.split('/').filter(Boolean);
     const entry = segments.length === 2 ? getEntry(segments[1]) : undefined;
+    const communityPost = segments[0] === 'blog' && segments.length === 2 ? getCommunityPost(segments[1]) : undefined;
     const query = new URLSearchParams(queryString).get('q')?.trim();
     let title = 'Trusted health information, articles & guides | Health Guide';
     let description = 'Find clear, evidence-based health articles, condition guides, and medication information, with every topic linked to trusted medical sources.';
     let type = 'website';
 
-    if (entry) {
+    if (communityPost) {
+      title = `${communityPost.title} | West Des Moines community blog`;
+      description = `${communityPost.summary} An original, source-linked Health Guide community post about West Des Moines, Iowa.`;
+      type = 'article';
+    } else if (pathname === '/blog') {
+      title = 'Positive West Des Moines, Iowa community stories | Health Guide Blog';
+      description = 'Read original positive stories about West Des Moines libraries, parks, arts, and neighbors helping neighbors, with links to verified local sources.';
+    } else if (pathname.startsWith('/blog/')) {
+      title = 'Community post not found | Health Guide Blog';
+      description = 'Browse positive, source-linked community stories from West Des Moines, Iowa.';
+    } else if (entry) {
       title = entry.published ? `${entry.title} | Health Guide` : `${entry.title}: evidence-based guide | Health Guide`;
       description = entry.published
         ? `${entry.summary} Published ${formatArticleDate(entry.published)} by ${entry.publisher}. Read the brief and original article.`
@@ -44,6 +62,9 @@ function usePageMetadata() {
     } else if (pathname === '/articles') {
       title = '50 recent healthcare articles & health explainers | Health Guide';
       description = 'Browse 50 recent health reads curated for broad U.S. relevance, with publisher dates, short summaries, original-source links, and separate everyday-health explainers.';
+    } else if (pathname === '/symptom-checker') {
+      title = 'Mayo Clinic Symptom Checker: information & official link | Health Guide';
+      description = 'Learn how to use Mayo Clinic’s external adult and child Symptom Checker, with an official link and clear limits. It is not a diagnosis or an emergency service.';
     } else if (pathname === '/conditions') {
       title = 'Condition library: clear health guides | Health Guide';
       description = 'Explore 50 curated, alphabetical guides to common conditions that touch daily American life, with trusted sources and reminders to discuss personal concerns with a clinician.';
@@ -57,8 +78,11 @@ function usePageMetadata() {
       title = 'PulseCare patient portal prototype | Health Guide';
       description = 'Explore PulseCare, an educational patient portal prototype with sample data. Appointments, refills, payments, and telehealth are not live.';
     } else if (pathname === '/resources') {
-      title = 'Eldercare, patient advocacy & government resources | Health Guide';
-      description = 'Find official Eldercare Locator, Patient Advocate Foundation, and USA.gov resources, with outbound links and clear limits.';
+      title = 'West Des Moines resources & nationwide support | Health Guide';
+      description = 'Explore 15 local and regional resources for West Des Moines, Iowa, plus Eldercare Locator, Patient Advocate Foundation, and USA.gov. Read service details and visit official websites.';
+    } else if (pathname === '/give-back') {
+      title = 'Donate & volunteer in West Des Moines, Iowa | Health Guide';
+      description = 'Find nine source-linked ways to help West Des Moines neighbors through donations and volunteering, with official next steps, service areas, and participation requirements.';
     } else if (pathname === '/vaccines') {
       title = 'Vaccine information & CDC schedules | Health Guide';
       description = 'Search source-linked vaccine fact sheets from the CDC VIS index and read educational schedule summaries with links to full CDC schedules.';
@@ -105,12 +129,12 @@ function Header() {
         <span>health guide</span>
       </Link>
       <nav className="nav-links" aria-label="Main navigation">
-        {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`nav-${item.label.toLowerCase()}`}>{item.label}</Link>)}
+        {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`nav-${item.href.slice(1)}`}>{item.label}</Link>)}
       </nav>
       <Link href="/sources" className="text-link" style={{ fontSize: 12 }} data-testid="link-source-standard">Our standard <ArrowUpRight size={14} /></Link>
     </header>
     <nav className="shell nav-mobile" aria-label="Main navigation">
-      {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`mobile-nav-${item.label.toLowerCase()}`}>{item.label}</Link>)}
+      {navItems.map((item) => <Link key={item.href} href={item.href} aria-current={location.startsWith(item.href) ? 'page' : undefined} data-testid={`mobile-nav-${item.href.slice(1)}`}>{item.label}</Link>)}
     </nav>
   </>;
 }
@@ -119,7 +143,7 @@ function Footer() {
   return <footer className="footer">
     <div className="shell footer-inner">
       <div><div className="brand" style={{ fontSize: 15 }}><span className="brand-mark" style={{ width: 28, height: 28 }}><HeartPulse size={15} /></span><span>health guide</span></div><p style={{ margin: '9px 0 0' }}>Clear answers. Credible sources. No diagnosis.</p></div>
-      <div className="footer-links"><Link href="/articles">Articles</Link><Link href="/conditions">Conditions</Link><Link href="/medications">Medications</Link><Link href="/resources">Resources</Link><Link href="/vaccines">Vaccines</Link><Link href="/goodrx">GoodRx</Link><Link href="/sources">Sources</Link></div>
+      <div className="footer-links">{navItems.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}</div>
       <span>Editorial source check: October 2026</span>
     </div>
   </footer>;
@@ -526,11 +550,15 @@ function App() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/articles" component={() => <Library kind="Article" />} />
+      <Route path="/blog">{() => <><BlogPage /><Footer /></>}</Route>
+      <Route path="/blog/:slug">{(params) => <><BlogPostPage slug={params.slug} /><Footer /></>}</Route>
+      <Route path="/symptom-checker">{() => <><SymptomCheckerPage /><Footer /></>}</Route>
       <Route path="/conditions" component={() => <Library kind="Condition" />} />
       <Route path="/medications" component={MedicationCatalog} />
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
       <Route path="/resources">{() => <><ResourcesPage /><Footer /></>}</Route>
+      <Route path="/give-back">{() => <><GiveBackPage /><Footer /></>}</Route>
       <Route path="/vaccines">{() => <><VaccinesPage /><Footer /></>}</Route>
       <Route path="/goodrx">{() => <><GoodRxPage /><Footer /></>}</Route>
       <Route path="/sources" component={SourcesPage} />

@@ -1,5 +1,6 @@
 - [Medication catalog scope](medication-catalog.md) — use current human finished-product labels, including biologics; separate labeled claims from approval and evidence.
 - [Condition sourcing](condition-sourcing.md) — curated U.S. everyday-health coverage is not a prevalence ranking; preserve complete source structure.
-- [PulseCare prototype scope](pulsecare-prototype.md) — the supplied portal is a separate educational tab, not connected healthcare services or validated clinical tools.
+- [PulseCare prototype scope](pulsecare-prototype.md) — tab removed at user request; retained prototype is not connected healthcare services or validated clinical tools.
 - [Vaccine source authority](vaccine-sourcing.md) — current schedule status and notes outrank calendar years and older VIS seasonal dosing.
 - [Recent article curation](article-curation.md) — verify publication dates and deduplicate; curate broad U.S. interest without claiming readership rankings.
+- [Community blog scope](community-blog.md) — positive West Des Moines, Iowa coverage; verify local claims and distinguish plans, events, recaps, and ongoing resources.
