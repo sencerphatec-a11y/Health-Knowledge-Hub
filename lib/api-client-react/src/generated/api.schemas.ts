@@ -5,6 +5,37 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface PhysicianPractice {
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  /** @nullable */
+  phone: string | null;
+}
+
+export interface PhysicianListing {
+  npi: string;
+  name: string;
+  /** @nullable */
+  credential: string | null;
+  specialties: string[];
+  locations: PhysicianPractice[];
+  sourceUrl: string;
+  /** @nullable */
+  lastUpdated: string | null;
+}
+
+export interface DoctorSearchPage {
+  items: PhysicianListing[];
+  page: number;
+  hasMore: boolean;
+  limitReached: boolean;
+  directoryRecordsOnPage: number;
+  retrievedAt: string;
+  sourceUrl: string;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -50,6 +81,43 @@ export type MedicationLabelDetail = MedicationLabel & ({
 export interface ApiError {
   message: string;
 }
+
+export type SearchDoctorsParams = {
+/**
+ * @minLength 1
+ * @maxLength 80
+ */
+city?: string;
+/**
+ * @pattern ^[A-Z]{2}$
+ */
+state?: string;
+/**
+ * @pattern ^[0-9]{5}$
+ */
+zip?: string;
+specialty?: SearchDoctorsSpecialty;
+/**
+ * @minimum 1
+ * @maximum 6
+ */
+page?: number;
+};
+
+export type SearchDoctorsSpecialty = typeof SearchDoctorsSpecialty[keyof typeof SearchDoctorsSpecialty];
+
+
+export const SearchDoctorsSpecialty = {
+  all: 'all',
+  'family-medicine': 'family-medicine',
+  'internal-medicine': 'internal-medicine',
+  pediatrics: 'pediatrics',
+  'ob-gyn': 'ob-gyn',
+  cardiology: 'cardiology',
+  dermatology: 'dermatology',
+  psychiatry: 'psychiatry',
+  'general-practice': 'general-practice',
+} as const;
 
 export type GetMedicationLabelsParams = {
 /**

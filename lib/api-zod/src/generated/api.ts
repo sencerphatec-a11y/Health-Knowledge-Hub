@@ -9,6 +9,53 @@ import * as zod from 'zod';
 
 
 /**
+ * Searches public CMS NPPES records. Only active physician records with matching U.S. practice locations are shown. Listings do not verify licensing, insurance, availability, or quality.
+ * @summary Find physician practice listings by city/state or ZIP code
+ */
+export const searchDoctorsQueryCityMax = 80;
+
+export const searchDoctorsQueryStateRegExp = new RegExp('^[A-Z]{2}$');
+export const searchDoctorsQueryZipRegExp = new RegExp('^[0-9]{5}$');
+export const searchDoctorsQuerySpecialtyDefault = `all`;
+export const searchDoctorsQueryPageDefault = 1;
+export const searchDoctorsQueryPageMax = 6;
+
+
+
+export const SearchDoctorsQueryParams = zod.object({
+  "city": zod.coerce.string().min(1).max(searchDoctorsQueryCityMax).optional(),
+  "state": zod.coerce.string().regex(searchDoctorsQueryStateRegExp).optional(),
+  "zip": zod.coerce.string().regex(searchDoctorsQueryZipRegExp).optional(),
+  "specialty": zod.enum(['all', 'family-medicine', 'internal-medicine', 'pediatrics', 'ob-gyn', 'cardiology', 'dermatology', 'psychiatry', 'general-practice']).default(searchDoctorsQuerySpecialtyDefault),
+  "page": zod.coerce.number().int().min(1).max(searchDoctorsQueryPageMax).default(searchDoctorsQueryPageDefault)
+})
+
+export const SearchDoctorsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "npi": zod.string(),
+  "name": zod.string(),
+  "credential": zod.string().nullable(),
+  "specialties": zod.array(zod.string()),
+  "locations": zod.array(zod.object({
+  "address": zod.string(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "postalCode": zod.string(),
+  "phone": zod.string().nullable()
+})),
+  "sourceUrl": zod.string(),
+  "lastUpdated": zod.string().nullable()
+})),
+  "page": zod.number().int(),
+  "hasMore": zod.boolean(),
+  "limitReached": zod.boolean(),
+  "directoryRecordsOnPage": zod.number().int(),
+  "retrievedAt": zod.string(),
+  "sourceUrl": zod.string()
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

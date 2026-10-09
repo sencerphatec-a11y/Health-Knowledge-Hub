@@ -5,6 +5,7 @@ import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationL
 import ResourcesPage from './pages/ResourcesPage';
 import SymptomCheckerPage from './pages/SymptomCheckerPage';
 import GiveBackPage from './pages/GiveBackPage';
+import FindDoctorPage from './pages/FindDoctorPage';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
 import PulseCarePage from './pages/PulseCarePage';
@@ -19,6 +20,7 @@ const navItems = [
   { label: 'Blog', href: '/blog' },
   { label: 'Symptom Checker', href: '/symptom-checker' },
   { label: 'Conditions', href: '/conditions' },
+  { label: 'Find a Doctor', href: '/find-a-doctor' },
   { label: 'Medications', href: '/medications' },
   { label: 'Resources', href: '/resources' },
   { label: 'Give Back', href: '/give-back' },
@@ -68,6 +70,9 @@ function usePageMetadata() {
     } else if (pathname === '/conditions') {
       title = 'Condition library: clear health guides | Health Guide';
       description = 'Explore 50 curated, alphabetical guides to common conditions that touch daily American life, with trusted sources and reminders to discuss personal concerns with a clinician.';
+    } else if (pathname === '/find-a-doctor') {
+      title = 'Find a doctor by city or ZIP code | Health Guide';
+      description = 'Search real CMS NPI Registry physician practice listings by city and state or ZIP code, with optional specialty filters, listed addresses, phone numbers, and source links.';
     } else if (pathname === '/medications') {
       title = 'Medication guides & medicine safety | Health Guide';
       description = 'Search current U.S. human medication and biologic product labels, read labeled uses, and follow direct DailyMed citations.';
@@ -554,6 +559,7 @@ function App() {
       <Route path="/blog/:slug">{(params) => <><BlogPostPage slug={params.slug} /><Footer /></>}</Route>
       <Route path="/symptom-checker">{() => <><SymptomCheckerPage /><Footer /></>}</Route>
       <Route path="/conditions" component={() => <Library kind="Condition" />} />
+      <Route path="/find-a-doctor">{() => <><FindDoctorPage /><Footer /></>}</Route>
       <Route path="/medications" component={MedicationCatalog} />
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>

@@ -13,6 +13,67 @@ tags:
   - name: medications
     description: Current U.S. human medication labels from DailyMed
 paths:
+  /doctors:
+    get:
+      operationId: searchDoctors
+      tags: [health]
+      summary: Find physician practice listings by city/state or ZIP code
+      description: Searches public CMS NPPES records. Only active physician records with matching U.S. practice locations are shown. Listings do not verify licensing, insurance, availability, or quality.
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 80
+        - name: state
+          in: query
+          schema:
+            type: string
+            pattern: "^[A-Z]{2}$"
+        - name: zip
+          in: query
+          schema:
+            type: string
+            pattern: "^[0-9]{5}$"
+        - name: specialty
+          in: query
+          schema:
+            type: string
+            enum: [all, family-medicine, internal-medicine, pediatrics, ob-gyn, cardiology, dermatology, psychiatry, general-practice]
+            default: all
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+            default: 1
+      responses:
+        "200":
+          description: Matching physician practice listings on this directory page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorSearchPage"
+        "400":
+          description: Supply a valid ZIP code or a city and state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: CMS directory unavailable or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Search service busy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /healthz:
     get:
       operationId: healthCheck
@@ -94,6 +155,62 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    PhysicianPractice:
+      type: object
+      properties:
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        phone:
+          type: [string, "null"]
+      required: [address, city, state, postalCode, phone]
+    PhysicianListing:
+      type: object
+      properties:
+        npi:
+          type: string
+        name:
+          type: string
+        credential:
+          type: [string, "null"]
+        specialties:
+          type: array
+          items:
+            type: string
+        locations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhysicianPractice"
+        sourceUrl:
+          type: string
+        lastUpdated:
+          type: [string, "null"]
+      required: [npi, name, credential, specialties, locations, sourceUrl, lastUpdated]
+    DoctorSearchPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PhysicianListing"
+        page:
+          type: integer
+        hasMore:
+          type: boolean
+        limitReached:
+          type: boolean
+        directoryRecordsOnPage:
+          type: integer
+        retrievedAt:
+          type: string
+        sourceUrl:
+          type: string
+      required: [items, page, hasMore, limitReached, directoryRecordsOnPage, retrievedAt, sourceUrl]
     HealthStatus:
       type: object
       properties:

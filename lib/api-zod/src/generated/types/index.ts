@@ -7,9 +7,14 @@
  */
 
 export * from './apiError';
+export * from './doctorSearchPage';
 export * from './getMedicationLabelsParams';
 export * from './healthStatus';
 export * from './medicationCatalogPage';
 export * from './medicationLabel';
 export * from './medicationLabelDetail';
 export * from './medicationLabelType';
+export * from './physicianListing';
+export * from './physicianPractice';
+export * from './searchDoctorsParams';
+export * from './searchDoctorsSpecialty';

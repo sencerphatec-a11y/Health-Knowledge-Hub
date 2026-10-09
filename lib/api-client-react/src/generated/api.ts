@@ -17,10 +17,12 @@ import type {
 
 import type {
   ApiError,
+  DoctorSearchPage,
   GetMedicationLabelsParams,
   HealthStatus,
   MedicationCatalogPage,
-  MedicationLabelDetail
+  MedicationLabelDetail,
+  SearchDoctorsParams
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -49,6 +51,91 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getSearchDoctorsUrl = (params?: SearchDoctorsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/doctors?${stringifiedParams}` : `/api/doctors`
+}
+
+/**
+ * Searches public CMS NPPES records. Only active physician records with matching U.S. practice locations are shown. Listings do not verify licensing, insurance, availability, or quality.
+ * @summary Find physician practice listings by city/state or ZIP code
+ */
+export const searchDoctors = async (params?: SearchDoctorsParams, options?: Parameters<typeof customFetch>[1]): Promise<DoctorSearchPage> => {
+
+  return customFetch<DoctorSearchPage>(getSearchDoctorsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchDoctorsQueryKey = (params?: SearchDoctorsParams,) => {
+    return [
+    `/api/doctors`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchDoctorsQueryOptions = <TData = Awaited<ReturnType<typeof searchDoctors>>, TError = ErrorType<ApiError>>(params?: SearchDoctorsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchDoctors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchDoctorsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchDoctors>>> = ({ signal }) => searchDoctors(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchDoctors>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchDoctorsQueryResult = NonNullable<Awaited<ReturnType<typeof searchDoctors>>>
+export type SearchDoctorsQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Find physician practice listings by city/state or ZIP code
+ */
+
+export function useSearchDoctors<TData = Awaited<ReturnType<typeof searchDoctors>>, TError = ErrorType<ApiError>>(
+ params?: SearchDoctorsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchDoctors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchDoctorsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getHealthCheckUrl = () => {
 

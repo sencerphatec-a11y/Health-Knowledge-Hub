@@ -4,3 +4,4 @@
 - [Vaccine source authority](vaccine-sourcing.md) — current schedule status and notes outrank calendar years and older VIS seasonal dosing.
 - [Recent article curation](article-curation.md) — verify publication dates and deduplicate; curate broad U.S. interest without claiming readership rankings.
 - [Community blog scope](community-blog.md) — positive West Des Moines, Iowa coverage; verify local claims and distinguish plans, events, recaps, and ongoing resources.
+- [Provider directory accuracy](provider-directory.md) — CMS searches can match secondary practices; distinguish local practice addresses from mailing addresses and credential verification.
