@@ -1,0 +1,8 @@
+.article-byline { color:#53675d; font-size:12px; line-height:1.6; margin:12px 0; }
+.article-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 20px; }
+.article-controls label { display:flex; align-items:center; gap:8px; font-size:13px; color:#465e53; }
+.article-controls select { padding:8px 12px; border:1px solid #cfd9cf; border-radius:8px; background:#fbf9f2; color:#285d51; font:inherit; }
+.article-source-action { margin-top:18px; }
+.article-selection-note { font-size:13px; line-height:1.7; color:#52675b; margin-bottom:20px; max-width:900px; }
+.listing-card time { white-space:nowrap; }
+@media (max-width:760px) { .article-controls { gap:8px; } .article-controls label { width:100%; } }

@@ -2,3 +2,4 @@
 - [Condition sourcing](condition-sourcing.md) — curated U.S. everyday-health coverage is not a prevalence ranking; preserve complete source structure.
 - [PulseCare prototype scope](pulsecare-prototype.md) — the supplied portal is a separate educational tab, not connected healthcare services or validated clinical tools.
 - [Vaccine source authority](vaccine-sourcing.md) — current schedule status and notes outrank calendar years and older VIS seasonal dosing.
+- [Recent article curation](article-curation.md) — verify publication dates and deduplicate; curate broad U.S. interest without claiming readership rankings.

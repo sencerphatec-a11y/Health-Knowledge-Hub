@@ -7,6 +7,8 @@ import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
 import PulseCarePage from './pages/PulseCarePage';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
+import { articleSelectionChecked, recentArticleCount, formatArticleDate } from './data/recent-articles';
+import './article-library.css';
 
 const navItems = [
   { label: 'Articles', href: '/articles' },
@@ -35,12 +37,14 @@ function usePageMetadata() {
     let type = 'website';
 
     if (entry) {
-      title = `${entry.title}: evidence-based guide | Health Guide`;
-      description = `${entry.summary} Read the plain-language overview and follow links to the original medical sources.`;
+      title = entry.published ? `${entry.title} | Health Guide` : `${entry.title}: evidence-based guide | Health Guide`;
+      description = entry.published
+        ? `${entry.summary} Published ${formatArticleDate(entry.published)} by ${entry.publisher}. Read the brief and original article.`
+        : `${entry.summary} Read the plain-language overview and follow links to the original medical sources.`;
       type = 'article';
     } else if (pathname === '/articles') {
-      title = 'Evidence-based health articles & explainers | Health Guide';
-      description = 'Read clear explainers about common health questions, medication labels, and public health topics. Every article links to its original sources.';
+      title = '50 recent healthcare articles & health explainers | Health Guide';
+      description = 'Browse 50 recent health reads curated for broad U.S. relevance, with publisher dates, short summaries, original-source links, and separate everyday-health explainers.';
     } else if (pathname === '/conditions') {
       title = 'Condition library: clear health guides | Health Guide';
       description = 'Explore 50 curated, alphabetical guides to common conditions that touch daily American life, with trusted sources and reminders to discuss personal concerns with a clinician.';
@@ -141,7 +145,7 @@ function SearchField({ initial = '', onSearch, home = false }: { initial?: strin
 function Home() {
   const [, setLocation] = useLocation();
   const doSearch = (query: string) => setLocation(query ? `/search?q=${encodeURIComponent(query)}` : '/articles');
-  const articlePicks = entries.filter((entry) => entry.kind === 'Article');
+  const articlePicks = entries.filter((entry) => entry.kind === 'Article').slice(0, 3);
   return <main>
     <div className="shell hero animate-arrive">
       <div>
@@ -165,7 +169,7 @@ function Home() {
         {[
           { href: '/conditions', icon: <HeartPulse size={18} />, count: `${entries.filter((e) => e.kind === 'Condition').length} condition guides`, title: 'Conditions', copy: 'Plain-language introductions to common health conditions.' },
           { href: '/medications', icon: <Pill size={18} />, count: 'DailyMed catalog', title: 'Medications', copy: 'Search current product labels and read their original safety information.' },
-          { href: '/articles', icon: <BookOpen size={18} />, count: '03 explainers', title: 'Articles', copy: 'Helpful context for readings, labels, and everyday questions.' },
+          { href: '/articles', icon: <BookOpen size={18} />, count: `${recentArticleCount} recent reads + 3 explainers`, title: 'Articles', copy: 'Recent healthcare reporting and useful everyday-health context.' },
         ].map((topic) => <Link key={topic.href} href={topic.href} className="topic-card" data-testid={`card-topic-${topic.title.toLowerCase()}`}>
           <div className="card-meta"><span>{topic.count}</span><span className="card-icon">{topic.icon}</span></div>
           <h3>{topic.title}</h3><p>{topic.copy}</p><div className="card-bottom"><span>Explore the collection</span><ArrowUpRight size={16} /></div>
@@ -183,7 +187,7 @@ function Home() {
       </div>
     </section>
     <section className="shell section">
-      <div className="section-head"><div><div className="eyebrow">A few good reads</div><h2 className="serif">The essentials, simply told.</h2></div><Link href="/articles" className="text-link">All articles <ArrowRight size={15} /></Link></div>
+      <div className="section-head"><div><div className="eyebrow">A few good reads</div><h2 className="serif">Recent health reads, with sources.</h2></div><Link href="/articles" className="text-link">All articles <ArrowRight size={15} /></Link></div>
       <div className="topic-grid">
         {articlePicks.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
       </div>
@@ -197,7 +201,8 @@ function EntryCard({ entry }: { entry: LibraryEntry }) {
   return <Link href={entryHref(entry)} className="listing-card" data-testid={`card-entry-${entry.id}`}>
     <div className="card-meta"><span>{entry.category}</span><span className="card-icon">{iconFor(entry.kind, 16)}</span></div>
     <h2>{entry.title}</h2><p>{entry.summary}</p>
-    <div className="card-bottom"><span>Read the guide</span><ArrowUpRight size={15} /></div>
+    {entry.published && <div className="article-byline">{entry.publisher}<br />Published <time dateTime={entry.published}>{formatArticleDate(entry.published)}</time></div>}
+    <div className="card-bottom"><span>{entry.published ? 'Read the brief & original source' : 'Read the guide'}</span><ArrowUpRight size={15} /></div>
   </Link>;
 }
 
@@ -207,26 +212,45 @@ function Library({ kind }: { kind: Kind }) {
   const initialQuery = params.get('q') || '';
   const query = initialQuery;
   const [filter, setFilter] = useState('All topics');
-  const baseEntries = useMemo(() => entries.filter((entry) => entry.kind === kind).sort((a, b) => a.title.localeCompare(b.title)), [kind]);
+  const [articleScope, setArticleScope] = useState('recent');
+  const [articleSort, setArticleSort] = useState('newest');
+  const baseEntries = useMemo(() => entries.filter((entry) => entry.kind === kind && (kind !== 'Article' || articleScope === 'all' || (articleScope === 'recent' ? !!entry.published : !entry.published))).sort((a, b) => {
+    if (kind !== 'Article' || articleSort === 'title') return a.title.localeCompare(b.title);
+    if (!a.published) return b.published ? 1 : a.title.localeCompare(b.title);
+    if (!b.published) return -1;
+    const comparison = (a.publishedAt || a.published).localeCompare(b.publishedAt || b.published);
+    return (articleSort === 'oldest' ? comparison : -comparison) || a.title.localeCompare(b.title);
+  }), [kind, articleScope, articleSort]);
   const categories = ['All topics', ...Array.from(new Set(baseEntries.map((entry) => entry.category)))];
   const filtered = baseEntries.filter((entry) => {
-    const matchesQuery = `${entry.title} ${entry.summary} ${entry.category}`.toLowerCase().includes(query.toLowerCase());
+    const matchesQuery = `${entry.title} ${entry.summary} ${entry.category} ${entry.publisher || ''}`.toLowerCase().includes(query.trim().toLowerCase());
     return matchesQuery && (filter === 'All topics' || entry.category === filter);
   });
   const collectionName = kind === 'Article' ? 'Articles' : kind === 'Condition' ? 'Conditions' : 'Medications';
   const description = kind === 'Article'
-    ? 'Short explainers for common health questions, built around trusted public-health sources.'
+    ? 'Recent healthcare reporting and explainers selected for broad relevance to American readers. Find the publication date, a short brief, and the original source for every recent read.'
     : kind === 'Condition'
       ? 'Straightforward introductions to common conditions. Start here for context, then bring personal questions to a clinician.'
       : 'Understand the basics of common medicines and check the original information and product labeling.';
   return <main className="shell">
     <div className="page-heading animate-arrive"><div className="eyebrow">The library / {collectionName}</div><h1 className="serif">{collectionName}, made clearer.</h1><p>{description}</p></div>
+    {kind === 'Article' && <>
+      <p className="article-selection-note" data-testid="text-article-selection">50 recent reads · Published September 15–October 9, 2026 · Sources checked {articleSelectionChecked}. This is a curated snapshot, not a live feed or a verified ranking of the most-read articles. Briefs link to publisher sites; some publishers may restrict access. Reporting and early research are not medical guidelines.</p>
+      <div className="article-controls">
+        <label>Collection <select aria-label="Article collection" value={articleScope} onChange={event => { setArticleScope(event.target.value); setFilter('All topics'); }} data-testid="select-article-collection">
+          <option value="recent">50 recent reads</option><option value="explainers">3 everyday explainers</option><option value="all">All 53 articles</option>
+        </select></label>
+        <label>Sort <select aria-label="Sort articles" value={articleSort} onChange={event => setArticleSort(event.target.value)} data-testid="select-article-sort">
+          <option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option>
+        </select></label>
+      </div>
+    </>}
     <div className="library-controls">
       <SearchField key={initialQuery} initial={initialQuery} onSearch={(value) => { setLocation(value ? `/${collectionFor(kind)}?q=${encodeURIComponent(value)}` : `/${collectionFor(kind)}`); }} />
       {categories.map((category) => <button key={category} type="button" className={`filter-chip${filter === category ? ' active' : ''}`} onClick={() => setFilter(category)} aria-pressed={filter === category} data-testid={`filter-${category.toLowerCase().replaceAll(' ', '-')}`}>{category}</button>)}
     </div>
     {kind === 'Condition' && <p className="catalog-note" data-testid="text-conditions-note">A curated set of common conditions, listed alphabetically. This is not an official numerical prevalence ranking.</p>}
-    <p className="result-count" aria-live="polite" data-testid="text-result-count">{filtered.length} {filtered.length === 1 ? 'guide' : 'guides'} in this collection</p>
+    <p className="result-count" aria-live="polite" data-testid="text-result-count">{filtered.length} {kind === 'Article' ? (filtered.length === 1 ? 'article' : 'articles') : (filtered.length === 1 ? 'guide' : 'guides')} in this collection</p>
     {filtered.length ? <div className="listing-grid">{filtered.map((entry) => <EntryCard key={entry.id} entry={entry} />)}</div> : <div className="empty-state" data-testid="empty-search"><Search size={25} /><h2>No guides found</h2><p>Try another word or choose a different topic.</p><button className="button-primary" onClick={() => { setFilter('All topics'); setLocation(`/${collectionFor(kind)}`); }}>Clear search and filters</button></div>}
     <div style={{ paddingBottom: 50 }}><Disclaimer /></div>
     <Footer />
@@ -386,7 +410,8 @@ function Detail({ collection, id }: { collection: string; id: string }) {
         <div className="eyebrow">{iconFor(entry.kind, 15)} {entry.kind} · {entry.category}</div>
         <h1>{entry.title}</h1>
         <p>{entry.summary}</p>
-        <div className="detail-meta"><span>Reviewed {entry.checked}</span><span>·</span><span>Source: {sourceNames}</span></div>
+        <div className="detail-meta"><span>{entry.published ? <>Published <time dateTime={entry.published}>{formatArticleDate(entry.published)}</time> · {entry.articleType}</> : `Reviewed ${entry.checked}`}</span><span>·</span><span>Source: {sourceNames}</span></div>
+        {entry.originalUrl && <a href={entry.originalUrl} target="_blank" rel="noopener noreferrer" className="button-primary article-source-action" data-testid="link-original-article">Read the full article at {entry.publisher} <ExternalLink size={15} /></a>}
       </div>
     </div>
     <div className="detail-layout">
@@ -412,7 +437,7 @@ function Detail({ collection, id }: { collection: string; id: string }) {
       <aside className="source-box" aria-label="Primary sources">
         <h2>Read the original</h2>
         {entry.sourceIds.map((sourceId) => <SourceCitation key={sourceId} sourceId={sourceId} />)}
-        <p className="source-note">Our editorial review date is October 2026. This is when Health Guide checked this summary; it does not mean the linked source page was updated then.</p>
+        <p className="source-note">{entry.published ? `Source checked ${entry.checked}. This is a curation check, not a clinical review. The publication date comes from the publisher; read the original for updates and corrections.` : 'Our editorial review date is October 2026. This is when Health Guide checked this summary; it does not mean the linked source page was updated then.'}</p>
         <Link href="/sources" className="text-link" style={{ marginTop: 9, fontSize: 11 }}>How we cite sources <ArrowRight size={13} /></Link>
       </aside>
     </div>
@@ -471,7 +496,7 @@ function SearchResults() {
 
 function SourcesPage() {
   return <main className="shell">
-    <div className="page-heading animate-arrive"><div className="eyebrow">The reading room / citations</div><h1 className="serif">Follow the source.</h1><p>We believe health information should show its work. Every guide points back to the public-health material behind its summary.</p></div>
+    <div className="page-heading animate-arrive"><div className="eyebrow">The reading room / citations</div><h1 className="serif">Follow the source.</h1><p>Every guide and article brief links to its original source. Public-health guidance, medical explainers, research news, and journalism are distinct types of information.</p></div>
     <div className="disclaimer" style={{ marginBottom: 25 }}><strong>Editorial check date: October 2026.</strong> This date records our review of the summaries, not a claim that any source website was updated on that date.</div>
     <div className="sources-list">
       {sources.map((source) => {

@@ -1,5 +1,6 @@
 import { conditionEntries, conditionSources } from './data/conditions';
 import { resourceSources } from './data/support-resources';
+import { recentArticleEntries, recentArticleSources } from './data/recent-articles';
 
 export type Kind = 'Article' | 'Condition' | 'Medication';
 
@@ -18,6 +19,11 @@ export interface LibraryEntry {
   category: string;
   summary: string;
   checked: string;
+  published?: string;
+  publishedAt?: string;
+  publisher?: string;
+  originalUrl?: string;
+  articleType?: string;
   sourceIds: string[];
   sections: {
     heading: string;
@@ -28,6 +34,7 @@ export interface LibraryEntry {
 }
 
 export const sources: Source[] = [
+  ...recentArticleSources,
   ...resourceSources,
   ...conditionSources,
   { id: 'med-hbp', title: 'High Blood Pressure', organization: 'MedlinePlus', url: 'https://medlineplus.gov/highbloodpressure.html', description: 'Overview of high blood pressure, measurement, and care.' },
@@ -42,6 +49,7 @@ export const sources: Source[] = [
 ];
 
 export const entries: LibraryEntry[] = [
+  ...recentArticleEntries,
   ...conditionEntries,
   {
     id: 'blood-pressure-readings', kind: 'Article', title: 'How blood pressure readings are understood', category: 'Heart health',
