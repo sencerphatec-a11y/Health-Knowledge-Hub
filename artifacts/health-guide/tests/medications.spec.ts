@@ -73,6 +73,52 @@ test('out-of-range pages are clamped with replacement, not another history entry
   await expect(row(page, 0, 0)).toBeVisible();
 });
 
+test('label filter combines with search and persists through paging, reload and history', async ({ page }) => {
+  await page.goto('/medications?q=filter-browser&page=2');
+  await expect(row(page, 0, 20)).toBeVisible();
+  const filter = page.getByRole('combobox', { name: 'Label type', exact: true });
+  await filter.selectOption('otc');
+  await expect(page).toHaveURL(/q=filter-browser&labelType=otc$/);
+  await expect(row(page, 1, 0)).toBeVisible();
+  await expect(row(page, 0, 0)).toHaveCount(0);
+  await expect(page.getByTestId('text-medication-catalog-summary')).toContainText('22 label records');
+  await expect(page.locator('.catalog-note')).toContainText('does not establish FDA approval or effectiveness');
+  await page.getByTestId('button-medications-next').click();
+  await expect(page).toHaveURL(/labelType=otc&page=2$/);
+  await expect(row(page, 1, 20)).toBeVisible();
+  await page.reload();
+  await expect(filter).toHaveValue('otc');
+  await expect(row(page, 1, 20)).toBeVisible();
+  const input = page.getByRole('textbox', { name: 'Search medication labels' });
+  await input.fill('filtered-name');
+  await input.press('Enter');
+  await expect(page).toHaveURL(/q=filtered-name&labelType=otc$/);
+  await expect(row(page, 1, 0)).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/q=filter-browser&labelType=otc&page=2$/);
+  await expect(filter).toHaveValue('otc');
+  await page.getByTestId('button-clear-medication-search').click();
+  await expect(page).toHaveURL(/\/medications\?labelType=otc$/);
+  await expect(row(page, 1, 0)).toBeVisible();
+  await page.getByRole('button', { name: 'Clear label filter' }).click();
+  await expect(page).toHaveURL(/\/medications$/);
+  await expect(filter).toHaveValue('');
+  await expect(page.getByTestId('text-medication-catalog-summary')).toContainText('48 label records');
+});
+
+test('filtered pages clamp without losing the type and empty filters can be reset', async ({ page }) => {
+  await page.goto('/medications?q=filter-clamp&labelType=otc&page=999');
+  await expect(page).toHaveURL(/q=filter-clamp&labelType=otc&page=2$/);
+  await expect(row(page, 1, 20)).toBeVisible();
+  await page.getByRole('combobox', { name: 'Label type', exact: true }).selectOption('compounded');
+  await expect(page).toHaveURL(/q=filter-clamp&labelType=compounded$/);
+  await expect(page.getByTestId('empty-medication-catalog')).toBeVisible();
+  await expect(page.getByTestId('text-medication-catalog-summary')).toContainText('0 label records');
+  await page.getByRole('button', { name: 'Clear search and filters' }).click();
+  await expect(page).toHaveURL(/\/medications$/);
+  await expect(row(page, 0, 0)).toBeVisible();
+});
+
 for (const invalidPage of ['0', '-2', '1.5', 'not-a-number']) {
   test(`invalid page ${invalidPage} safely displays the first page`, async ({ page }) => {
     await page.goto(`/medications?q=invalid-page-${invalidPage}&page=${invalidPage}`);

@@ -141,21 +141,25 @@ function errorResponse(res: ExpressResponse, error: unknown) {
 
 router.get("/medication-labels", async (req, res) => {
   let query: string | undefined;
+  let labelType: LabelType | undefined;
   let page: number;
   try {
     const params = GetMedicationLabelsQueryParams.parse(req.query);
     query = params.query?.trim() || undefined;
+    labelType = params.labelType;
     page = params.page;
     if (page > 100_000) {
       return res.status(400).json({ message: "Page is outside the supported range." });
     }
   } catch {
-    return res.status(400).json({ message: "Enter a medication name and a valid page number." });
+    return res.status(400).json({ message: "Enter a medication name, a supported label type, and a valid page number." });
   }
 
   try {
     const categories = await Promise.all(
-      (Object.keys(HUMAN_LABEL_TYPES) as (keyof typeof HUMAN_LABEL_TYPES)[]).map(async (doctype) => {
+      (Object.keys(HUMAN_LABEL_TYPES) as (keyof typeof HUMAN_LABEL_TYPES)[])
+        .filter((doctype) => !labelType || HUMAN_LABEL_TYPES[doctype] === labelType)
+        .map(async (doctype) => {
         const firstPage = await readDailyMedPage(listUrl(doctype, query, 1));
         return { doctype, firstPage, count: readPositiveInteger(firstPage.metadata?.total_elements) };
       }),
@@ -222,6 +226,7 @@ router.get("/medication-labels", async (req, res) => {
     return res.json(GetMedicationLabelsResponse.parse({
       items,
       query: query ?? null,
+      labelType: labelType ?? null,
       page,
       pageSize: PAGE_SIZE_PER_TYPE,
       totalItems,

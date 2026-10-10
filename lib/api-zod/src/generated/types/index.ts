@@ -11,6 +11,7 @@ export * from './doctorSearchPage';
 export * from './getMedicationLabelsParams';
 export * from './healthStatus';
 export * from './medicationCatalogPage';
+export * from './medicationCatalogPageLabelType';
 export * from './medicationLabel';
 export * from './medicationLabelDetail';
 export * from './medicationLabelType';

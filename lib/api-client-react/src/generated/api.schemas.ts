@@ -63,11 +63,32 @@ export interface MedicationLabel {
   sourceUrl: string;
 }
 
+/**
+ * Selected product-label type, or null for the complete catalog.
+ */
+export type MedicationCatalogPageLabelType = typeof MedicationCatalogPageLabelType[keyof typeof MedicationCatalogPageLabelType] | null;
+
+
+export const MedicationCatalogPageLabelType = {
+  prescription: 'prescription',
+  otc: 'otc',
+  compounded: 'compounded',
+  vaccine: 'vaccine',
+  'plasma-derivative': 'plasma-derivative',
+  'cellular-therapy': 'cellular-therapy',
+  'licensed-cell-product': 'licensed-cell-product',
+  allergenic: 'allergenic',
+  'standardized-allergenic': 'standardized-allergenic',
+} as const;
+
 export interface MedicationCatalogPage {
   items: MedicationLabel[];
   query: string | null;
+  /** Selected product-label type, or null for the complete catalog. */
+  labelType: MedicationCatalogPageLabelType;
   page: number;
   pageSize: number;
+  /** Number of product-label records matching the name search and optional label-type filter, not unique medicines or approved drugs. */
   totalItems: number;
   totalPages: number;
   catalogUpdatedAt: string;
@@ -126,6 +147,10 @@ export type GetMedicationLabelsParams = {
  * @maxLength 100
  */
 query?: string;
+/**
+ * Narrow to one product-label type. Omit to include the complete catalog; label type does not establish FDA approval.
+ */
+labelType?: MedicationLabelType;
 /**
  * @minimum 1
  * @maximum 100000

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
-import { getGetMedicationLabelQueryKey, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
+import { getGetMedicationLabelQueryKey, MedicationLabelType, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
 import ResourcesPage from './pages/ResourcesPage';
 import SymptomCheckerPage from './pages/SymptomCheckerPage';
 import GiveBackPage from './pages/GiveBackPage';
@@ -304,27 +304,32 @@ function MedicationCatalog() {
   const [, setLocation] = useLocation();
   const urlParams = new URLSearchParams(useSearch());
   const initialQuery = urlParams.get('q') || '';
+  const rawLabelType = urlParams.get('labelType');
+  const labelType = Object.values(MedicationLabelType).find(type => type === rawLabelType);
   const pageFromUrl = Number(urlParams.get('page') || '1');
   const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
   const [searchValue, setSearchValue] = useState(initialQuery);
   const params = useMemo(() => ({
     ...(initialQuery.trim() ? { query: initialQuery.trim() } : {}),
+    ...(labelType ? { labelType } : {}),
     page,
-  }), [initialQuery, page]);
+  }), [initialQuery, labelType, page]);
   const catalog = useGetMedicationLabels(params);
   useEffect(() => { setSearchValue(initialQuery); }, [initialQuery]);
   useEffect(() => {
-    if (catalog.data && catalog.data.page !== page) {
+    if (catalog.data && (catalog.data.page !== page || (rawLabelType !== null && !labelType))) {
       const search = new URLSearchParams();
       if (initialQuery.trim()) search.set('q', initialQuery.trim());
+      if (labelType) search.set('labelType', labelType);
       if (catalog.data.page > 1) search.set('page', String(catalog.data.page));
       setLocation(`/medications${search.size ? `?${search.toString()}` : ''}`, { replace: true });
     }
-  }, [catalog.data, page, initialQuery, setLocation]);
+  }, [catalog.data, page, initialQuery, labelType, rawLabelType, setLocation]);
 
-  const goTo = (nextQuery: string, nextPage: number) => {
+  const goTo = (nextQuery: string, nextPage: number, nextLabelType = labelType || '') => {
     const search = new URLSearchParams();
     if (nextQuery.trim()) search.set('q', nextQuery.trim());
+    if (nextLabelType) search.set('labelType', nextLabelType);
     if (nextPage > 1) search.set('page', String(nextPage));
     setLocation(`/medications${search.size ? `?${search.toString()}` : ''}`);
   };
@@ -342,6 +347,14 @@ function MedicationCatalog() {
       {searchValue && <button className="catalog-clear" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }} aria-label="Clear search" data-testid="button-clear-medication-search">Clear</button>}
       <button className="button-primary catalog-submit" type="submit" data-testid="button-search-medication-labels">Search labels <ArrowRight size={14} /></button>
     </form>
+    <div className="catalog-filter">
+      <label htmlFor="medication-label-type">Label type</label>
+      <select id="medication-label-type" value={labelType || ''} onChange={(event) => goTo(initialQuery, 1, event.target.value)} data-testid="select-medication-label-type">
+        <option value="">All label types</option>
+        {Object.values(MedicationLabelType).map(type => <option key={type} value={type}>{labelTypeName(type)}</option>)}
+      </select>
+      {labelType && <button type="button" className="text-link" onClick={() => goTo(initialQuery, 1, '')}>Clear label filter</button>}
+    </div>
 
     <div className="catalog-note"><Pill size={16} /><span>Records are product-specific, not unique medicines. DailyMed inclusion does not establish FDA approval or effectiveness; some labels are for unapproved or homeopathic products. Animal drugs, devices, and manufacturing ingredients are excluded.</span></div>
 
@@ -350,10 +363,10 @@ function MedicationCatalog() {
     </section> : catalog.isError ? <div className="catalog-state catalog-error" role="alert">
       <h2>Labels could not be loaded.</h2><p>{catalog.error.message || 'We could not reach the current DailyMed catalog. Please try again.'}</p>
       <button type="button" className="button-primary" onClick={() => catalog.refetch()} data-testid="button-retry-medication-catalog">Try again <ArrowRight size={14} /></button>
-      <button type="button" className="text-link" onClick={() => goTo('', 1)} style={{ marginTop: 16 }}>Return to the catalog <ArrowRight size={14} /></button>
+      <button type="button" className="text-link" onClick={() => goTo('', 1, '')} style={{ marginTop: 16 }}>Return to the catalog <ArrowRight size={14} /></button>
     </div> : results ? <>
       <div className="catalog-summary" aria-live="polite" data-testid="text-medication-catalog-summary">
-        <p>{results.query ? <>Results for <strong>“{results.query}”</strong></> : <>Current U.S. human drug-label catalog</>}</p>
+        <p>{results.query ? <>Results for <strong>“{results.query}”</strong></> : <>Current U.S. human drug-label catalog</>}{results.labelType && <> · {labelTypeName(results.labelType)}</>}</p>
         <span>{results.totalItems.toLocaleString()} {results.totalItems === 1 ? 'label record' : 'label records'}</span>
       </div>
       {results.items.length ? <div className="label-list" data-testid="list-medication-labels">
@@ -362,7 +375,7 @@ function MedicationCatalog() {
           <span className="label-main"><span className="label-title">{label.title}</span><span className="label-subtitle"><span className={`label-type ${label.labelType}`}>{labelTypeName(label.labelType)}</span><span>Published {formatDate(label.publishedDate)}</span><span>View labeled uses</span></span></span>
           <ArrowUpRight size={17} className="label-arrow" aria-hidden="true" />
         </Link>)}
-      </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }}>Clear search <ArrowRight size={14} /></button></div>}
+      </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name{labelType ? ' or choose a different label type' : ''}. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }}>Clear search <ArrowRight size={14} /></button>{labelType && <button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1, ''); }}>Clear search and filters <ArrowRight size={14} /></button>}</div>}
       {results.totalPages > 1 && <nav className="pagination" aria-label="Medication label pages">
         <button type="button" disabled={results.page <= 1} onClick={() => goTo(initialQuery, results.page - 1)} data-testid="button-medications-previous"><ChevronLeft size={16} /> Previous</button>
         <span aria-live="polite">Page <strong>{results.page}</strong> of <strong>{results.totalPages}</strong></span>

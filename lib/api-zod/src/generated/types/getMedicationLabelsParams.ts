@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MedicationLabelType } from './medicationLabelType';
 
 export type GetMedicationLabelsParams = {
 /**
@@ -13,6 +14,10 @@ export type GetMedicationLabelsParams = {
  * @maxLength 100
  */
 query?: string;
+/**
+ * Narrow to one product-label type. Omit to include the complete catalog; label type does not establish FDA approval.
+ */
+labelType?: MedicationLabelType;
 /**
  * @minimum 1
  * @maximum 100000

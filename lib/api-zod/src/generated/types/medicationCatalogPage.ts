@@ -5,13 +5,17 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MedicationCatalogPageLabelType } from './medicationCatalogPageLabelType';
 import type { MedicationLabel } from './medicationLabel';
 
 export interface MedicationCatalogPage {
   items: MedicationLabel[];
   query: string | null;
+  /** Selected product-label type, or null for the complete catalog. */
+  labelType: MedicationCatalogPageLabelType;
   page: number;
   pageSize: number;
+  /** Number of product-label records matching the name search and optional label-type filter, not unique medicines or approved drugs. */
   totalItems: number;
   totalPages: number;
   catalogUpdatedAt: Date;

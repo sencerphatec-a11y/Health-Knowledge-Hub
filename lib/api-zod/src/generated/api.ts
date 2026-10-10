@@ -77,6 +77,7 @@ export const getMedicationLabelsQueryPageMax = 100000;
 
 export const GetMedicationLabelsQueryParams = zod.object({
   "query": zod.coerce.string().min(1).max(getMedicationLabelsQueryQueryMax).optional().describe('Search by a generic or brand medication name.'),
+  "labelType": zod.enum(['prescription', 'otc', 'compounded', 'vaccine', 'plasma-derivative', 'cellular-therapy', 'licensed-cell-product', 'allergenic', 'standardized-allergenic']).optional().describe('Narrow to one product-label type. Omit to include the complete catalog; label type does not establish FDA approval.'),
   "page": zod.coerce.number().int().min(1).max(getMedicationLabelsQueryPageMax).default(getMedicationLabelsQueryPageDefault)
 })
 
@@ -89,9 +90,10 @@ export const GetMedicationLabelsResponse = zod.object({
   "sourceUrl": zod.string().url()
 })),
   "query": zod.string().nullable(),
+  "labelType": zod.union([zod.literal('prescription'),zod.literal('otc'),zod.literal('compounded'),zod.literal('vaccine'),zod.literal('plasma-derivative'),zod.literal('cellular-therapy'),zod.literal('licensed-cell-product'),zod.literal('allergenic'),zod.literal('standardized-allergenic'),zod.literal(null)]).nullable().describe('Selected product-label type, or null for the complete catalog.'),
   "page": zod.number().int(),
   "pageSize": zod.number().int(),
-  "totalItems": zod.number().int(),
+  "totalItems": zod.number().int().describe('Number of product-label records matching the name search and optional label-type filter, not unique medicines or approved drugs.'),
   "totalPages": zod.number().int(),
   "catalogUpdatedAt": zod.coerce.date()
 })

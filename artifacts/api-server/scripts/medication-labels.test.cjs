@@ -100,8 +100,36 @@ test("zero matches in one category do not hide the other category", async () => 
   assert.equal(body.page, 1);
 });
 
+test("every label filter queries only its category and reports matching counts", async () => {
+  const labelTypes = ["prescription", "otc", "compounded", "vaccine", "plasma-derivative",
+    "cellular-therapy", "licensed-cell-product", "allergenic", "standardized-allergenic"];
+  for (const [index, labelType] of labelTypes.entries()) {
+    const start = calls.length;
+    const { status, body } = await request(`/medication-labels?query=filter-${index}&labelType=${labelType}&page=999`);
+    assert.equal(status, 200);
+    assert.equal(body.labelType, labelType);
+    assert.equal(body.query, `filter-${index}`);
+    const count = [23, 42, 0, 3][index] || 0;
+    assert.equal(body.totalItems, count);
+    assert.equal(body.totalPages, Math.max(1, Math.ceil(count / 20)));
+    assert.equal(body.page, body.totalPages);
+    assert.equal(body.items.length, count ? count % 20 || 20 : 0);
+    assert.ok(body.items.every(item => item.labelType === labelType));
+    assert.ok(calls.length > start);
+    assert.ok(calls.slice(start).every(url => url.searchParams.get("doctype") === types[index] &&
+      url.searchParams.get("drug_name") === `filter-${index}`));
+  }
+  const unfiltered = await request("/medication-labels?query=filter-default");
+  assert.equal(unfiltered.body.labelType, null);
+  assert.equal(unfiltered.body.totalItems, 68);
+  const empty = await request("/medication-labels?query=empty&labelType=otc&page=3");
+  assert.equal(empty.body.totalItems, 0);
+  assert.equal(empty.body.page, 1);
+  assert.deepEqual(empty.body.items, []);
+});
+
 test("invalid input and invalid upstream counts fail visibly and remain retryable", async () => {
-  for (const query of ["page=0", "page=1.5", "page=100001", `query=${"x".repeat(101)}`]) {
+  for (const query of ["page=0", "page=1.5", "page=100001", "labelType=unknown", "labelType=", "labelType=otc&labelType=vaccine", `query=${"x".repeat(101)}`]) {
     assert.equal((await request(`/medication-labels?${query}`)).status, 400);
   }
   assert.equal((await request("/medication-labels?query=bad-count")).status, 502);
