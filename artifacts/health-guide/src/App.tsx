@@ -8,6 +8,7 @@ import GiveBackPage from './pages/GiveBackPage';
 import FindDoctorPage from './pages/FindDoctorPage';
 import FindFoodPage from './pages/FindFoodPage';
 import HousingAssistancePage from './pages/HousingAssistancePage';
+import QuestionnairesPage from './pages/QuestionnairesPage';
 import HomeAboutSection from './components/HomeAboutSection';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
@@ -25,6 +26,7 @@ const navItems = [
   { label: 'Symptom Checker', href: '/symptom-checker' },
   { label: 'Conditions', href: '/conditions' },
   { label: 'Find a Doctor', href: '/find-a-doctor' },
+  { label: 'Questionnaires', href: '/questionnaires' },
   { label: 'Medications', href: '/medications' },
   { label: 'Resources', href: '/resources' },
   { label: 'Find Food', href: '/find-food' },
@@ -79,6 +81,9 @@ function usePageMetadata() {
     } else if (pathname === '/find-a-doctor') {
       title = 'Find a doctor by city or ZIP code | Health Guide';
       description = 'Search real CMS NPI Registry physician practice listings by city and state or ZIP code, with optional specialty filters, listed addresses, phone numbers, and source links.';
+    } else if (pathname === '/questionnaires') {
+      title = 'Health questionnaires & educational results | Health Guide';
+      description = 'Explore private adult wellness and lifestyle reflections, PHQ-9 and GAD-7 symptom screeners, and exercise-readiness information with official PAR-Q+ links. Scores are not diagnoses or exercise clearance.';
     } else if (pathname === '/medications') {
       title = 'Medication guides & medicine safety | Health Guide';
       description = 'Search current U.S. human medication and biologic product labels, read labeled uses, and follow direct DailyMed citations.';
@@ -598,6 +603,7 @@ function App() {
       <Route path="/symptom-checker">{() => <><SymptomCheckerPage /><Footer /></>}</Route>
       <Route path="/conditions" component={() => <Library kind="Condition" />} />
       <Route path="/find-a-doctor">{() => <><FindDoctorPage /><Footer /></>}</Route>
+      <Route path="/questionnaires">{() => <><QuestionnairesPage /><Footer /></>}</Route>
       <Route path="/medications" component={MedicationCatalog} />
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
