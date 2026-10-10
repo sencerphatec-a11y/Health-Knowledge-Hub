@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["node"],
+    "moduleResolution": "bundler"
+  },
+  "include": ["playwright.config.ts", "tests/**/*.ts"]
+}

@@ -14,3 +14,9 @@ Use a bounded five-minute cache of successful DailyMed catalog responses; never 
 **Why:** Unified paging needs counts across multiple source categories. Re-fetching every count on every page unnecessarily loads the public service; a short cache limits that while retaining timely source updates.
 
 **How to apply:** Cache only successful validated responses and deduplicate concurrent requests. Revisit the freshness window if the product gains safety-alert or real-time update requirements.
+
+Medication regression checks should substitute controlled upstream responses rather than rely on live catalog counts or bypass the real API with client-side response mocks.
+
+**Why:** Live label counts change, and a mocked API envelope can pass browser navigation checks while concealing a broken paging or extraction contract between the service and interface.
+
+**How to apply:** Keep upstream substitution confined to the isolated test process and exercise the production route with deterministic category counts, source text, and failures.
