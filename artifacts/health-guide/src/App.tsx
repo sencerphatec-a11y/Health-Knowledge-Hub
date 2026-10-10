@@ -9,6 +9,7 @@ import FindDoctorPage from './pages/FindDoctorPage';
 import FindFoodPage from './pages/FindFoodPage';
 import HousingAssistancePage from './pages/HousingAssistancePage';
 import QuestionnairesPage from './pages/QuestionnairesPage';
+import { medicationLabelTypeDefinitions, medicationLabelTypeSource } from './data/medication-label-types';
 import HomeAboutSection from './components/HomeAboutSection';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
@@ -362,6 +363,22 @@ function MedicationCatalog() {
     </div>
 
     <div className="catalog-note"><Pill size={16} /><span>Records are product-specific, not unique medicines. DailyMed inclusion does not establish FDA approval or effectiveness; some labels are for unapproved or homeopathic products. Animal drugs, devices, and manufacturing ingredients are excluded.</span></div>
+    {labelType && <p className="label-type-selected-help" id="selected-label-type-explanation" data-testid="text-selected-label-type-explanation">
+      <strong>{labelTypeName(labelType)}: </strong>{medicationLabelTypeDefinitions[labelType].description}{' '}
+      <a href={medicationLabelTypeDefinitions[labelType].source} target="_blank" rel="noopener noreferrer">{medicationLabelTypeDefinitions[labelType].sourceLabel} <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a>
+    </p>}
+    <details className="label-type-guide" data-testid="medication-label-type-guide">
+      <summary>What do the nine label types mean?</summary>
+      <p>These are categories of product-label documents, not rankings of safety or effectiveness. A category is not an independent approval check or a recommendation for your care. All label types remain included unless you choose a filter.</p>
+      <p><a href={medicationLabelTypeSource} target="_blank" rel="noopener noreferrer">FDA: official labeling document types <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a></p>
+      <dl>{Object.values(MedicationLabelType).map(type => {
+        const definition = medicationLabelTypeDefinitions[type];
+        return <div key={type} data-testid={`explanation-label-type-${type}`}>
+          <dt>{definition.name}</dt>
+          <dd>{definition.description}{' '}<a href={definition.source} target="_blank" rel="noopener noreferrer">{definition.sourceLabel} <ExternalLink size={11} aria-hidden="true" /><span className="sr-only"> (opens in a new tab)</span></a></dd>
+        </div>;
+      })}</dl>
+    </details>
 
     {catalog.isLoading ? <section className="catalog-results" aria-label="Loading medication labels" aria-busy="true">
       <div className="skeleton-line" /><div className="label-skeletons">{[1, 2, 3, 4, 5, 6].map((item) => <div className="label-skeleton" key={item}><i /><b /><span /></div>)}</div>
@@ -401,13 +418,8 @@ function formatDate(value: string) {
 }
 
 function labelTypeName(type: string) {
-  const names: Record<string, string> = {
-    prescription: 'Prescription', otc: 'Over the counter', compounded: 'Compounded medicine',
-    vaccine: 'Vaccine', 'plasma-derivative': 'Plasma-derived medicine',
-    'cellular-therapy': 'Cellular therapy', 'licensed-cell-product': 'Licensed cell product',
-    allergenic: 'Allergy product', 'standardized-allergenic': 'Standardized allergy product',
-  };
-  return names[type] || type;
+  const knownType = Object.values(MedicationLabelType).find(value => value === type);
+  return knownType ? medicationLabelTypeDefinitions[knownType].name : type;
 }
 
 function MedicationRecordRoute({ id }: { id: string }) {

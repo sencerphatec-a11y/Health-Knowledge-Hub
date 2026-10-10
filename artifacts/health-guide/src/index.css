@@ -190,6 +190,16 @@ a { color: inherit; text-decoration: none; }
 .catalog-filter { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:18px 0; font-size:14px; color:#203c34; }
 .catalog-filter select { max-width:100%; min-width:0; padding:10px 12px; border:1px solid #dcd8ca; border-radius:10px; background:#fbf9f2; color:#203c34; font:inherit; }
 .catalog-filter select:focus-visible { outline:2px solid #52756a; outline-offset:3px; }
+.label-type-guide { margin:18px 0 25px; padding:16px 18px; border:1px solid #dcd8ca; border-radius:12px; background:#fbf9f2; font-size:13px; line-height:1.65; }
+.label-type-guide summary { cursor:pointer; font-weight:600; color:#203c34; }
+.label-type-guide summary:focus-visible { outline:2px solid #52756a; outline-offset:4px; }
+.label-type-guide p { margin:12px 0; }
+.label-type-guide dl { margin:16px 0 0; }
+.label-type-guide dl>div { padding:12px 0; border-top:1px solid #e5dfd1; }
+.label-type-guide dt { font-weight:600; color:#203c34; }
+.label-type-guide dd { margin:5px 0 0; }
+.label-type-guide a,.label-type-selected-help a { color:#285d51; text-decoration:underline; text-underline-offset:3px; }
+.label-type-selected-help { margin:0 0 18px; font-size:13px; line-height:1.65; }
 .catalog-note { display:flex; align-items:center; gap:10px; margin:18px 0 27px; padding:12px 15px; color:#527166; background:#e9eee6; border-radius:10px; font-size:11px; }
 .catalog-summary { display:flex; align-items:baseline; justify-content:space-between; gap:18px; padding-bottom:11px; border-bottom:1px solid #dcd8cb; color:#68776d; font-size:12px; }
 .catalog-summary p { margin:0; }.catalog-summary strong { color:#294d41; font-weight:600; }.catalog-summary span { font-size:11px; white-space:nowrap; }
