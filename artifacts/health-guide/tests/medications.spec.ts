@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 
 const idFor = (type: number, index: number) =>
   `${String(type).padStart(8, '0')}-1111-4111-8111-${String(index).padStart(12, '0')}`;
@@ -7,11 +7,185 @@ const row = (page: Page, type: number, index: number) =>
 const sourceUrl = (id: string) =>
   `https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=${id}`;
 
+// Reach controls through the actual tab order, never click() or focus().
+async function tabTo(page: Page, target: Locator, backwards = false) {
+  await expect(target).toBeVisible();
+  for (let step = 0; step < 100; step++) {
+    if (await target.evaluate(element => element === document.activeElement)) break;
+    await page.keyboard.press(backwards ? 'Shift+Tab' : 'Tab');
+  }
+  await expect(target).toBeFocused();
+  await expectVisibleFocus(target);
+}
+
+async function expectVisibleFocus(target: Locator) {
+  await expect(target).toBeFocused();
+  const indicator = await target.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {
+      visible: element.matches(':focus-visible'),
+      outline: style.outlineStyle,
+      width: parseFloat(style.outlineWidth),
+      color: style.outlineColor,
+    };
+  });
+  expect(indicator.visible).toBeTruthy();
+  expect(indicator.outline).not.toBe('none');
+  expect(indicator.width).toBeGreaterThanOrEqual(2);
+  expect(indicator.color).not.toBe('rgba(0, 0, 0, 0)');
+}
+
 test.beforeEach(async ({ request }) => {
   expect((await request.post('/__fixtures', { data: { unavailable: false, hold: false } })).ok()).toBeTruthy();
 });
 test.afterEach(async ({ request }) => {
   await request.post('/__fixtures', { data: { unavailable: false, hold: false } });
+});
+
+test('keyboard-only search, paging and product return retain usable focus and accessible names', async ({ page }) => {
+  await page.goto('/medications?q=keyboard-origin&page=2');
+  await expect(row(page, 0, 20)).toBeVisible();
+  const input = page.getByRole('textbox', { name: 'Search medication labels', exact: true });
+  await tabTo(page, input);
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type('keyboard-search');
+  const clear = page.getByRole('button', { name: 'Clear search', exact: true });
+  await tabTo(page, clear);
+  const submit = page.getByRole('button', { name: 'Search labels', exact: true });
+  await tabTo(page, submit);
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/medications\?q=keyboard-search$/);
+  const status = page.getByTestId('status-medication-catalog');
+  await expect(status).toHaveAttribute('role', 'status');
+  await expect(status).toHaveAttribute('aria-live', 'polite');
+  await expect(status).toHaveAttribute('aria-atomic', 'true');
+  await expect(status).toHaveText('48 label records for “keyboard-search”. Page 1 of 3.');
+  await expect(submit).toBeFocused();
+  await tabTo(page, page.getByRole('combobox', { name: 'Label type', exact: true }));
+  const previous = page.getByRole('button', { name: 'Previous', exact: true });
+  const next = page.getByRole('button', { name: 'Next', exact: true });
+  await expect(previous).toBeDisabled();
+  await tabTo(page, next);
+  await page.keyboard.press('Space');
+  await expect(row(page, 0, 20)).toBeVisible();
+  const summary = page.getByRole('region', { name: 'Medication label results', exact: true });
+  await expectVisibleFocus(summary);
+  await expect(status).toContainText('Page 2 of 3.');
+  await page.keyboard.press('Tab');
+  await expectVisibleFocus(row(page, 0, 20));
+  await tabTo(page, next);
+  await page.keyboard.press('Enter');
+  await expect(status).toContainText('Page 3 of 3.');
+  await expect(next).toBeDisabled();
+  await expectVisibleFocus(summary);
+  await tabTo(page, previous);
+  await page.keyboard.press('Enter');
+  await expect(status).toContainText('Page 2 of 3.');
+  await expectVisibleFocus(summary);
+  await page.keyboard.press('Tab');
+  const product = row(page, 0, 20);
+  await expectVisibleFocus(product);
+  const productTitle = await product.locator('.label-title').innerText();
+  await expect(product).toHaveAccessibleName(new RegExp(productTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  await page.keyboard.press('Enter');
+  const heading = page.getByRole('heading', { level: 1, name: productTitle, exact: true });
+  await expectVisibleFocus(heading);
+  await expect(page.getByTestId('status-medication-detail')).toContainText(`Medication label loaded: ${productTitle}`);
+  const source = page.getByRole('link', { name: 'Read the complete label', exact: true });
+  await tabTo(page, source);
+  const back = page.getByRole('link', { name: 'Browse medication labels', exact: true });
+  await tabTo(page, back);
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/medications$/);
+  await expect(row(page, 0, 0)).toBeVisible();
+  await tabTo(page, input);
+  await page.keyboard.type('keyboard-enter');
+  await page.keyboard.press('Enter');
+  await expect(status).toContainText('for “keyboard-enter”');
+  await expectVisibleFocus(input);
+  await tabTo(page, clear);
+  await page.keyboard.press('Space');
+  await expect(input).toHaveValue('');
+  await expectVisibleFocus(input);
+  await expect(page).toHaveURL(/\/medications$/);
+});
+
+test('loading and empty results update a persistent live status and can be cleared by keyboard', async ({ page, request }) => {
+  await request.post('/__fixtures', { data: { hold: true } });
+  await page.goto('/medications?q=keyboard-held');
+  const status = page.getByTestId('status-medication-catalog');
+  await expect(status).toHaveText('Loading medication labels.');
+  await expect(page.getByRole('region', { name: 'Loading medication labels' })).toHaveAttribute('aria-busy', 'true');
+  // Keeping the same node is important: newly mounted live text can be missed.
+  const statusNode = await status.elementHandle();
+  await request.post('/__fixtures', { data: { hold: false } });
+  await expect(status).toContainText('48 label records');
+  expect(await statusNode!.evaluate(element => element === document.querySelector('[data-testid="status-medication-catalog"]'))).toBeTruthy();
+  const input = page.getByRole('textbox', { name: 'Search medication labels' });
+  await tabTo(page, input);
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type('empty');
+  await page.keyboard.press('Enter');
+  await expect(status).toHaveText('0 label records for “empty”. No label records found.');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  const reset = page.getByTestId('empty-medication-catalog').getByRole('button', { name: 'Clear search', exact: true });
+  await tabTo(page, reset);
+  await page.keyboard.press('Enter');
+  await expect(status).toContainText('48 label records');
+  await expectVisibleFocus(page.getByTestId('text-medication-catalog-summary'));
+});
+
+test('catalog error is announced and keyboard retry and return recover without lost focus', async ({ page, request }) => {
+  await request.post('/__fixtures', { data: { unavailable: true } });
+  await page.goto('/medications?q=keyboard-retry');
+  await expect(page.getByRole('alert')).toContainText('Labels could not be loaded.');
+  const retry = page.getByRole('button', { name: 'Try again', exact: true });
+  await tabTo(page, retry);
+  await request.post('/__fixtures', { data: { unavailable: false, hold: true } });
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('status-medication-catalog')).toHaveText('Loading medication labels.');
+  await request.post('/__fixtures', { data: { hold: false } });
+  await expect(row(page, 0, 0)).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expectVisibleFocus(page.getByTestId('text-medication-catalog-summary'));
+  await request.post('/__fixtures', { data: { unavailable: true } });
+  const input = page.getByRole('textbox', { name: 'Search medication labels' });
+  await tabTo(page, input, true);
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type('keyboard-return-error');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('alert')).toContainText('Labels could not be loaded.');
+  await tabTo(page, page.getByRole('button', { name: 'Return to the catalog', exact: true }));
+  await request.post('/__fixtures', { data: { unavailable: false } });
+  await page.keyboard.press('Space');
+  await expect(page).toHaveURL(/\/medications$/);
+  await expectVisibleFocus(page.getByTestId('text-medication-catalog-summary'));
+});
+
+test('detail loading and error are announced and keyboard retry and back links work', async ({ page, request }) => {
+  await request.post('/__fixtures', { data: { hold: true, unavailable: true } });
+  await page.goto(`/medications/${idFor(0, 9)}`);
+  const status = page.getByTestId('status-medication-detail');
+  await expect(status).toHaveText('Loading medication label.');
+  await expect(status).toHaveAttribute('role', 'status');
+  await expect(status).toHaveAttribute('aria-live', 'polite');
+  await expect(status).toHaveAttribute('aria-atomic', 'true');
+  await expect(page.getByRole('region', { name: 'Loading medication label', exact: true })).toHaveAttribute('aria-busy', 'true');
+  await request.post('/__fixtures', { data: { hold: false } });
+  await expect(page.getByRole('alert')).toContainText('This label could not be opened.');
+  await expectVisibleFocus(page.getByRole('heading', { level: 1 }));
+  await tabTo(page, page.getByRole('button', { name: 'Try again', exact: true }));
+  await request.post('/__fixtures', { data: { unavailable: false } });
+  await page.keyboard.press('Space');
+  await expect(status).toContainText('Medication label loaded:');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expectVisibleFocus(page.getByRole('heading', { level: 1 }));
+  await page.goto('/medications/not-a-label');
+  await expect(page.getByRole('alert')).toContainText('This label could not be opened.');
+  await tabTo(page, page.getByRole('link', { name: 'Back to medication labels', exact: true }));
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/medications$/);
+  await expect(row(page, 0, 0)).toBeVisible();
 });
 
 test('search submission resets paging; next, previous, reload and browser back preserve results', async ({ page }) => {

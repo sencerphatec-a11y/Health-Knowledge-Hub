@@ -66,6 +66,13 @@ pnpm --filter @workspace/health-guide run test:medications --project=firefox
   reload, browser back, and server-clamped/invalid pages.
 - Loading controlled by a release gate, empty results, service failures and
   explicit catalog/detail retries, malformed and removed labels.
+- Keyboard-only Tab/Shift+Tab, Enter and Space journeys through search,
+  next/previous pages, product links, clear/reset, retry and return controls;
+  accessible control names and visible focus outlines, including focus recovery
+  when loading or navigation removes the active control.
+- Persistent polite loading/result status regions (including empty results and
+  current page), and alert semantics for catalog/detail failures. These checks
+  verify browser semantics, not actual speech from a screen reader.
 - Exact original-source URLs, extracted nested uses, missing-use messaging,
   source limitations and all three authored medication guides.
 - Unbroken long titles in both list and detail views at 320px and 390px,

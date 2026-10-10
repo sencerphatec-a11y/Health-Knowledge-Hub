@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, Route, Switch, useLocation, useSearch } from 'wouter';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, FileText, HeartPulse, Pill, Search } from 'lucide-react';
 import { getGetMedicationLabelQueryKey, MedicationLabelType, useGetMedicationLabel, useGetMedicationLabels } from '@workspace/api-client-react';
@@ -321,6 +321,14 @@ function MedicationCatalog() {
     page,
   }), [initialQuery, labelType, page]);
   const catalog = useGetMedicationLabels(params);
+  const resultsFocus = useRef<HTMLDivElement>(null);
+  const focusAfterLoad = useRef(false);
+  useEffect(() => {
+    if (!catalog.isFetching && catalog.data && !catalog.isError && focusAfterLoad.current) {
+      resultsFocus.current?.focus();
+      focusAfterLoad.current = false;
+    }
+  }, [catalog.isFetching, catalog.data, catalog.isError]);
   useEffect(() => { setSearchValue(initialQuery); }, [initialQuery]);
   useEffect(() => {
     if (catalog.data && (catalog.data.page !== page || (rawLabelType !== null && !labelType))) {
@@ -332,7 +340,8 @@ function MedicationCatalog() {
     }
   }, [catalog.data, page, initialQuery, labelType, rawLabelType, setLocation]);
 
-  const goTo = (nextQuery: string, nextPage: number, nextLabelType = labelType || '') => {
+  const goTo = (nextQuery: string, nextPage: number, nextLabelType = labelType || '', moveFocus = false) => {
+    focusAfterLoad.current = moveFocus;
     const search = new URLSearchParams();
     if (nextQuery.trim()) search.set('q', nextQuery.trim());
     if (nextLabelType) search.set('labelType', nextLabelType);
@@ -350,7 +359,7 @@ function MedicationCatalog() {
     <form className="catalog-search" role="search" onSubmit={(event) => { event.preventDefault(); goTo(searchValue, 1); }}>
       <Search size={18} aria-hidden="true" />
       <input aria-label="Search medication labels" maxLength={100} value={searchValue} onChange={(event) => setSearchValue(event.target.value)} placeholder="Search a generic or brand name" data-testid="input-medication-catalog-search" />
-      {searchValue && <button className="catalog-clear" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }} aria-label="Clear search" data-testid="button-clear-medication-search">Clear</button>}
+      {searchValue && <button className="catalog-clear" type="button" onClick={(event) => { event.currentTarget.form?.querySelector('input')?.focus(); setSearchValue(''); goTo('', 1); }} aria-label="Clear search" data-testid="button-clear-medication-search">Clear</button>}
       <button className="button-primary catalog-submit" type="submit" data-testid="button-search-medication-labels">Search labels <ArrowRight size={14} /></button>
     </form>
     <div className="catalog-filter">
@@ -380,14 +389,17 @@ function MedicationCatalog() {
       })}</dl>
     </details>
 
+    <p className="medication-status" role="status" aria-live="polite" aria-atomic="true" data-testid="status-medication-catalog">
+      {catalog.isFetching ? 'Loading medication labels.' : catalog.isError ? '' : results ? `${results.totalItems.toLocaleString()} label ${results.totalItems === 1 ? 'record' : 'records'}${results.query ? ` for “${results.query}”` : ''}. ${results.totalItems ? `Page ${results.page} of ${results.totalPages}.` : 'No label records found.'}` : ''}
+    </p>
     {catalog.isLoading ? <section className="catalog-results" aria-label="Loading medication labels" aria-busy="true">
       <div className="skeleton-line" /><div className="label-skeletons">{[1, 2, 3, 4, 5, 6].map((item) => <div className="label-skeleton" key={item}><i /><b /><span /></div>)}</div>
     </section> : catalog.isError ? <div className="catalog-state catalog-error" role="alert">
       <h2>Labels could not be loaded.</h2><p>{catalog.error.message || 'We could not reach the current DailyMed catalog. Please try again.'}</p>
-      <button type="button" className="button-primary" onClick={() => catalog.refetch()} data-testid="button-retry-medication-catalog">Try again <ArrowRight size={14} /></button>
-      <button type="button" className="text-link" onClick={() => goTo('', 1, '')} style={{ marginTop: 16 }}>Return to the catalog <ArrowRight size={14} /></button>
+      <button type="button" className="button-primary" onClick={() => { focusAfterLoad.current = true; catalog.refetch(); }} data-testid="button-retry-medication-catalog">Try again <ArrowRight size={14} /></button>
+      <button type="button" className="text-link" onClick={() => goTo('', 1, '', true)} style={{ marginTop: 16 }}>Return to the catalog <ArrowRight size={14} /></button>
     </div> : results ? <>
-      <div className="catalog-summary" aria-live="polite" data-testid="text-medication-catalog-summary">
+      <div className="catalog-summary" ref={resultsFocus} tabIndex={-1} role="region" aria-label="Medication label results" data-testid="text-medication-catalog-summary">
         <p>{results.query ? <>Results for <strong>“{results.query}”</strong></> : <>Current U.S. human drug-label catalog</>}{results.labelType && <> · {labelTypeName(results.labelType)}</>}</p>
         <span>{results.totalItems.toLocaleString()} {results.totalItems === 1 ? 'label record' : 'label records'}</span>
       </div>
@@ -397,11 +409,11 @@ function MedicationCatalog() {
           <span className="label-main"><span className="label-title">{label.title}</span><span className="label-subtitle"><span className={`label-type ${label.labelType}`}>{labelTypeName(label.labelType)}</span><span>Published {formatDate(label.publishedDate)}</span><span>View labeled uses</span></span></span>
           <ArrowUpRight size={17} className="label-arrow" aria-hidden="true" />
         </Link>)}
-      </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name{labelType ? ' or choose a different label type' : ''}. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1); }}>Clear search <ArrowRight size={14} /></button>{labelType && <button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1, ''); }}>Clear search and filters <ArrowRight size={14} /></button>}</div>}
+      </div> : <div className="catalog-state" data-testid="empty-medication-catalog"><Search size={24} /><h2>No label records found</h2><p>Try another generic or brand name{labelType ? ' or choose a different label type' : ''}. Search covers current product labels, not just ingredient names.</p><button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1, labelType || '', true); }}>Clear search <ArrowRight size={14} /></button>{labelType && <button className="text-link" type="button" onClick={() => { setSearchValue(''); goTo('', 1, '', true); }}>Clear search and filters <ArrowRight size={14} /></button>}</div>}
       {results.totalPages > 1 && <nav className="pagination" aria-label="Medication label pages">
-        <button type="button" disabled={results.page <= 1} onClick={() => goTo(initialQuery, results.page - 1)} data-testid="button-medications-previous"><ChevronLeft size={16} /> Previous</button>
-        <span aria-live="polite">Page <strong>{results.page}</strong> of <strong>{results.totalPages}</strong></span>
-        <button type="button" disabled={results.page >= results.totalPages} onClick={() => goTo(initialQuery, results.page + 1)} data-testid="button-medications-next">Next <ChevronRight size={16} /></button>
+        <button type="button" disabled={results.page <= 1} onClick={() => goTo(initialQuery, results.page - 1, labelType || '', true)} data-testid="button-medications-previous"><ChevronLeft size={16} /> Previous</button>
+        <span>Page <strong>{results.page}</strong> of <strong>{results.totalPages}</strong></span>
+        <button type="button" disabled={results.page >= results.totalPages} onClick={() => goTo(initialQuery, results.page + 1, labelType || '', true)} data-testid="button-medications-next">Next <ChevronRight size={16} /></button>
       </nav>}
       <div className="catalog-updated"><CalendarDays size={14} /> Catalog last updated {formatDate(results.catalogUpdatedAt)} · Records from <a href="https://dailymed.nlm.nih.gov/dailymed/" target="_blank" rel="noreferrer">DailyMed <ExternalLink size={11} /></a></div>
     </> : null}
@@ -432,18 +444,31 @@ function MedicationLabelDetailPage({ setId }: { setId: string }) {
   const queryKey = getGetMedicationLabelQueryKey(setId);
   const labelQuery = useGetMedicationLabel(setId, { query: { enabled: !!setId, queryKey } });
   const label = labelQuery.data;
+  const titleFocus = useRef<HTMLHeadingElement>(null);
+  const focusAfterLoad = useRef(true);
+  useEffect(() => { focusAfterLoad.current = true; }, [setId]);
+  useEffect(() => {
+    if (!labelQuery.isFetching && focusAfterLoad.current) {
+      titleFocus.current?.focus();
+      focusAfterLoad.current = false;
+    }
+  }, [setId, labelQuery.isFetching, labelQuery.isError]);
+  const status = <p className="medication-status" role="status" aria-live="polite" aria-atomic="true" data-testid="status-medication-detail">
+    {labelQuery.isFetching ? 'Loading medication label.' : labelQuery.isError ? '' : label ? `Medication label loaded: ${label.title}` : ''}
+  </p>;
 
-  if (labelQuery.isLoading) return <main className="shell medication-detail"><div className="detail-top"><div className="skeleton-line short" /><div className="skeleton-heading" /><div className="skeleton-line" /></div><div className="detail-layout"><article className="reading-content"><div className="label-detail-skeleton" /><div className="label-detail-skeleton" /></article></div></main>;
+  if (labelQuery.isLoading) return <main className="shell medication-detail">{status}<section aria-label="Loading medication label" aria-busy="true"><div className="detail-top"><div className="skeleton-line short" /><div className="skeleton-heading" /><div className="skeleton-line" /></div><div className="detail-layout"><article className="reading-content"><div className="label-detail-skeleton" /><div className="label-detail-skeleton" /></article></div></section></main>;
   if (labelQuery.isError || !label) return <main className="shell medication-detail">
-    <div className="catalog-state detail-error" role="alert"><Pill size={25} /><h1 className="serif">This label could not be opened.</h1><p>{labelQuery.error?.message || 'It may no longer be in the catalog, or the service may be temporarily unavailable.'}</p><button type="button" className="button-primary" onClick={() => labelQuery.refetch()} data-testid="button-retry-medication-label">Try again <ArrowRight size={14} /></button><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Back to medication labels</Link></div><Footer />
+    {status}<div className="catalog-state detail-error" role="alert"><Pill size={25} /><h1 className="serif" ref={titleFocus} tabIndex={-1}>This label could not be opened.</h1><p>{labelQuery.error?.message || 'It may no longer be in the catalog, or the service may be temporarily unavailable.'}</p><button type="button" className="button-primary" onClick={() => { focusAfterLoad.current = true; labelQuery.refetch(); }} data-testid="button-retry-medication-label">Try again <ArrowRight size={14} /></button><Link href="/medications" className="text-link"><ArrowLeft size={14} /> Back to medication labels</Link></div><Footer />
   </main>;
 
   return <main className="shell medication-detail">
+    {status}
     <div className="detail-top animate-arrive">
       <div className="breadcrumbs"><Link href="/medications">Medication labels</Link><ChevronRight size={13} /><span>DailyMed product label</span></div>
       <div className="detail-hero">
         <div className="eyebrow"><Pill size={15} /> DailyMed · {labelTypeName(label.labelType)}</div>
-        <h1>{label.title}</h1>
+        <h1 ref={titleFocus} tabIndex={-1}>{label.title}</h1>
         <p>This is an individual product label. Labels can vary between products, even when they contain the same active ingredient.</p>
         <div className="detail-meta"><span>Published {formatDate(label.publishedDate)}</span><span>·</span><span>Effective {label.labelEffectiveDate ? formatDate(label.labelEffectiveDate) : 'date not listed'}</span></div>
       </div>
