@@ -8,3 +8,4 @@
 - [Health Guide audience](health-guide-audience.md) — for anyone seeking medical-condition resources or community information; user-selected local searches are not limited to West Des Moines.
 - [Questionnaire boundaries](questionnaire-boundaries.md) — keep sensitive responses private by default; distinguish validated symptom scales from custom reflections and verify embedding rights.
 - [Brace expansion security](brace-expansion-security.md) — preserve legacy Tailwind glob behavior; depth-guarded replacement is intentional while upstream lacks a fix.
+- [Cross-browser Nix setup](browser-nix-setup.md) — use a coherent browser library/graphics stack; ambient Replit Mesa settings can break headless WebKit.

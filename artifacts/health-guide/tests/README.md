@@ -6,20 +6,55 @@ Run from the repository root:
 pnpm --filter @workspace/health-guide run test:medications
 ```
 
-This first typechecks the test/configuration files, then runs Chromium against an
-isolated server on loopback port 4177. Playwright starts and stops that server;
+This first typechecks the test/configuration files, then runs the same suite in
+Chromium, Firefox and WebKit (the engine used by Safari). This checks WebKit,
+not the branded Safari app or a physical iPhone.
+Each engine has an isolated server on loopback ports 4177, 4178 and 4179,
+respectively. Playwright starts and stops those servers;
 no running app workflow, database, credentials, or live DailyMed access is needed.
-The port must be free. An existing process is deliberately never reused.
+All three ports must be free. Existing processes are deliberately never reused.
 
-In Replit, the installed Chromium is detected automatically. Elsewhere install
-the matching browser once:
+Install the browsers matching the locked Playwright version once (and again
+after upgrading Playwright):
 
 ```sh
-pnpm --filter @workspace/health-guide exec playwright install chromium
+pnpm --filter @workspace/health-guide exec playwright install chromium firefox webkit
 ```
 
+On a supported Linux distribution, install system libraries too using
+`pnpm --filter @workspace/health-guide exec playwright install --with-deps chromium firefox webkit`.
+That system-dependency installer uses apt; on Replit/NixOS, use Nix-provided
+browser libraries instead, not apt:
+
+```sh
+pnpm --filter @workspace/health-guide exec node tests/setup-nix-browsers.mjs
+pnpm --filter @workspace/health-guide run test:medications
+```
+
+The setup script uses Replit's installed `nixpkgs-stable-25_05` and
+`nixpkgs-stable-23_11` channels to provide the browser downloads' required ABIs.
+It installs matching Firefox/WebKit downloads, links WebKit's extra-library
+directory, and saves local launch settings under ignored `.cache/`.
+It selects Mesa software rendering for headless WebKit. Playwright's Ubuntu
+`ldconfig` probe cannot see Nix libraries, so this setup disables only that
+pre-launch host probe; real browser launches and all tests still run normally.
+Run setup again after upgrading Playwright or if the browser cache is removed.
+No Nix paths or browser binaries are committed to the repository.
+
+Missing browsers or libraries are setup
+failures: do not skip an engine or treat those failures as passing tests.
+
+In Replit, the installed Chromium is detected automatically; Firefox and WebKit
+still require their matching Playwright downloads and system libraries.
 Alternatively set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to a locally installed
-Chromium executable. No absolute browser path is required outside Replit.
+Chromium executable. This override applies only to the Chromium project.
+No absolute browser path is required outside Replit.
+
+For one engine, run:
+
+```sh
+pnpm --filter @workspace/health-guide run test:medications --project=firefox
+```
 
 ## What is exercised
 
@@ -39,8 +74,11 @@ Chromium executable. No absolute browser path is required outside Replit.
 Fixture controls and the substituted fetch are confined to the test process in
 `artifacts/api-server/scripts/medication-browser-fixtures.cjs`; production code
 has no fixture mode. Queries are unique when needed to avoid sharing successful
-responses in the production API cache. Tests run serially because upstream
-controls are shared. Upstream URLs without a fixture fail instead of going live.
+responses in the production API cache. Tests run with one worker, serially.
+Each project also has a separate server process, so fixture release/failure
+controls and cached successful API responses cannot leak between engines.
+Keep this isolation when changing worker or project settings.
+Upstream URLs without a fixture fail instead of going live.
 
 Failures retain screenshots and Playwright traces in ignored `test-results/`.
 Use `pnpm --filter @workspace/health-guide exec playwright show-trace <trace.zip>`

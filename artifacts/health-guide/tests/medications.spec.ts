@@ -154,15 +154,17 @@ test('empty search is distinct from service failure and can be cleared', async (
 
 test('unavailable catalog shows an error and explicit retry recovers', async ({ page, request }) => {
   await request.post('/__fixtures', { data: { unavailable: true } });
-  await page.goto('/medications?q=retry-catalog');
+  await page.goto('/medications?q=retry-catalog&labelType=otc&page=2');
   await expect(page.getByRole('alert')).toContainText('Labels could not be loaded.');
   await expect(page.getByTestId('empty-medication-catalog')).toHaveCount(0);
   await expect(page.getByTestId('list-medication-labels')).toHaveCount(0);
   await request.post('/__fixtures', { data: { unavailable: false } });
   await page.getByTestId('button-retry-medication-catalog').click();
-  await expect(row(page, 0, 0)).toBeVisible();
+  await expect(row(page, 1, 20)).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
-  await expect(page).toHaveURL(/q=retry-catalog$/);
+  await expect(page).toHaveURL(/q=retry-catalog&labelType=otc&page=2$/);
+  await expect(page.getByRole('textbox', { name: 'Search medication labels' })).toHaveValue('retry-catalog');
+  await expect(page.getByRole('combobox', { name: 'Label type', exact: true })).toHaveValue('otc');
 });
 
 test('detail service failure recovers through its retry button', async ({ page, request }) => {
@@ -204,6 +206,9 @@ test('extracted uses include nested indications and link to the exact product so
   await expect(page.locator('.uses-copy')).toContainText('Fixture nested indication.');
   await expect(page.getByTestId('link-original-dailymed-label')).toHaveAttribute('href', sourceUrl(idFor(0, 0)));
   await expect(page.getByTestId('link-original-dailymed-label')).toHaveAttribute('rel', 'noreferrer');
+  await page.reload();
+  await expect(page.locator('.uses-copy')).toContainText('Fixture nested indication.');
+  await expect(page.getByTestId('link-original-dailymed-label')).toHaveAttribute('href', sourceUrl(idFor(0, 0)));
 });
 
 for (const [slug, title] of [['ibuprofen', 'Ibuprofen'], ['acetaminophen', 'Acetaminophen'], ['metformin', 'Metformin']]) {
