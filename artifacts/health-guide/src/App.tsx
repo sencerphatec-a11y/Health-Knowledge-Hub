@@ -13,6 +13,7 @@ import { medicationLabelTypeDefinitions, medicationLabelTypeSource } from './dat
 import HomeAboutSection from './components/HomeAboutSection';
 import VaccinesPage from './pages/VaccinesPage';
 import GoodRxPage from './pages/GoodRxPage';
+import DrugInteractionsPage from './pages/DrugInteractionsPage';
 import PulseCarePage from './pages/PulseCarePage';
 import BlogPage, { BlogPostPage } from './pages/BlogPage';
 import { getCommunityPost } from './data/community-blog';
@@ -29,6 +30,7 @@ const navItems = [
   { label: 'Find a Doctor', href: '/find-a-doctor' },
   { label: 'Questionnaires', href: '/questionnaires' },
   { label: 'Medications', href: '/medications' },
+  { label: 'Drug Interactions', href: '/drug-interactions' },
   { label: 'Resources', href: '/resources' },
   { label: 'Find Food', href: '/find-food' },
   { label: 'Housing Assistance', href: '/housing-assistance' },
@@ -112,6 +114,9 @@ function usePageMetadata() {
     } else if (pathname === '/goodrx') {
       title = 'GoodRx prescription coupons explained | Health Guide';
       description = 'Learn how the GoodRx commercial coupon service works. GoodRx is not insurance, and savings are not guaranteed.';
+    } else if (pathname === '/drug-interactions') {
+      title = 'Drug interactions & Drugs.com resources | Health Guide';
+      description = 'Learn about Drugs.com’s interaction checker, interaction ratings, and medicine, food, alcohol, and supplement precautions, with links to the original resources.';
     } else if (pathname === '/sources') {
       title = 'Health Guide sources & citations | MedlinePlus, CDC, FDA';
       description = 'See the original public-health and medicine sources behind Health Guide articles, condition pages, and medication guides.';
@@ -612,7 +617,7 @@ function SourcesPage() {
         return <article className="source-directory-card" key={source.id} data-testid={`source-row-${source.id}`}>
           <div><h2>{source.title}</h2><p>{source.organization} · {source.description}</p></div>
           <a className="button-primary" style={{ padding: '10px 14px', fontSize: 11 }} href={source.url} target="_blank" rel="noreferrer">Visit original <ExternalLink size={13} /></a>
-          <div className="source-tags" aria-label="Guides citing this source">{source.id === 'dailymed' && <Link href="/medications">Browse medication labels</Link>}{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
+          <div className="source-tags" aria-label="Guides citing this source">{source.id === 'dailymed' && <Link href="/medications">Browse medication labels</Link>}{source.id === 'drugs-com' && <Link href="/drug-interactions">Drug interaction resources</Link>}{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
         </article>;
       })}
     </div>
@@ -642,6 +647,7 @@ function App() {
       <Route path="/find-a-doctor">{() => <><FindDoctorPage /><Footer /></>}</Route>
       <Route path="/questionnaires">{() => <><QuestionnairesPage /><Footer /></>}</Route>
       <Route path="/medications" component={MedicationCatalog} />
+      <Route path="/drug-interactions">{() => <><DrugInteractionsPage /><Footer /></>}</Route>
       <Route path="/medications/:id">{(params) => <MedicationRecordRoute id={params.id} />}</Route>
       <Route path="/pulsecare">{() => <><PulseCarePage /><Footer /></>}</Route>
       <Route path="/resources">{() => <><ResourcesPage /><Footer /></>}</Route>
