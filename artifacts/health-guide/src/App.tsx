@@ -86,7 +86,7 @@ function usePageMetadata() {
       description = 'Search real CMS NPI Registry physician practice listings by city and state or ZIP code, with optional specialty filters, listed addresses, phone numbers, and source links.';
     } else if (pathname === '/questionnaires') {
       title = 'Health questionnaires & educational results | Health Guide';
-      description = 'Explore private adult wellness and lifestyle reflections, PHQ-9 and GAD-7 symptom screeners, and exercise-readiness information with official PAR-Q+ links. Scores are not diagnoses or exercise clearance.';
+      description = 'Explore private PHQ-9, GAD-7, PHQ-4, AUDIT-C, PCL-5 and PHQ-15 screeners, adult BMI results, wellness reflections, and official insomnia, pain-disability and PAR-Q+ resources. Results are not diagnoses.';
     } else if (pathname === '/medications') {
       title = 'Medication guides & medicine safety | Health Guide';
       description = 'Search current U.S. human medication and biologic product labels, read labeled uses, and follow direct DailyMed citations.';

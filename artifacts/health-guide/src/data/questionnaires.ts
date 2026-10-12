@@ -1,4 +1,6 @@
-export type QuestionnaireId = 'wellbeing' | 'phq9' | 'gad7' | 'exercise' | 'lifestyle';
+import { additionalQuestionnaires } from './additional-questionnaires';
+
+export type QuestionnaireId = 'wellbeing' | 'phq9' | 'gad7' | 'phq4' | 'auditc' | 'pcl5' | 'phq15' | 'exercise' | 'lifestyle';
 export interface QuestionnaireResource { label: string; href: string }
 export interface QuestionnaireChoice { value: number; label: string; points: number }
 export interface QuestionnaireQuestion {
@@ -160,4 +162,5 @@ export const questionnaireDefinitions: QuestionnaireDefinition[] = [
     ],
     resources: [questionnaireResources.heart, questionnaireResources.family, questionnaireResources.prevention, questionnaireResources.apnea, questionnaireResources.ergonomics, questionnaireResources.tobacco, questionnaireResources.activity],
   },
+  ...additionalQuestionnaires(questionnaireResources, frequency, attribution),
 ];

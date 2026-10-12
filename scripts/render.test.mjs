@@ -70,6 +70,10 @@ test("Render production command serves the website and API on one port", { timeo
     for (const category of ["Contraindicated", "Serious", "Monitor Closely", "Minor"]) {
       assert.ok(javascript.includes(category), `Missing Medscape category: ${category}`);
     }
+    for (const tool of ["PHQ-9", "GAD-7", "PHQ-4", "AUDIT-C", "PCL-5", "PHQ-15",
+      "Insomnia Severity Index", "Oswestry Disability Index", "Neck Disability Index", "Morbid obesity"]) {
+      assert.ok(javascript.includes(tool), `The Render bundle must include the questionnaire/BMI update: ${tool}`);
+    }
     for (const route of ["/api/not-a-route", "/assets/not-a-file.js", "/not-a-file.css"]) {
       const res = await get(route);
       assert.equal(res.status, 404, route);

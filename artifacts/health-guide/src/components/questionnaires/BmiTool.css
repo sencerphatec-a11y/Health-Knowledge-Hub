@@ -1,0 +1,26 @@
+.bmi-form .qn-q{display:grid;gap:14px}
+.bmi-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.bmi-field label{font-size:14px;font-weight:600}
+.bmi-hint{margin:0}
+.bmi-input-wrap{position:relative;max-width:260px}
+.bmi-field input,.bmi-field select{width:100%;min-height:48px;padding:10px 14px;border:1px solid #ded9ce;border-radius:12px;background:#fffdf7;font:inherit;font-size:16px;color:inherit}
+.bmi-field select{max-width:340px}
+.bmi-input-wrap input{padding-right:48px}
+.bmi-unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:#5c6d64;pointer-events:none}
+.bmi-field input:focus-visible,.bmi-field select:focus-visible,.bmi-summary a:focus-visible{outline:3px solid #285d51;outline-offset:2px}
+.bmi-field.has-error input,.bmi-field.has-error select{border:2px solid #b4472f}
+.bmi-field-err{color:#9a3420;font-weight:600;font-size:13px;line-height:1.5;margin:0}
+.bmi-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.bmi-summary{border:2px solid #b4472f;background:#f8e4dc;border-radius:14px;padding:12px 18px;margin-bottom:16px}
+.bmi-summary .qn-error{margin:0 0 6px}
+.bmi-summary ul{margin:0;padding-left:18px;font-size:13px;line-height:1.6}
+.bmi-summary a{color:#7a2a18;text-decoration:underline;text-underline-offset:3px}
+.bmi-readout{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin-top:10px}
+.bmi-value{font-size:64px;line-height:.9;color:#285d51}
+.bmi-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#526e62}
+.bmi-result .bmi-readout h2{margin:4px 0 0}
+.bmi-ranges{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.bmi-ranges li{display:flex;flex-wrap:wrap;gap:4px 14px;padding:10px 14px;border:1px solid #e4dfd2;border-radius:10px;font-size:14px;color:#4f6158}
+.bmi-ranges li strong{min-width:140px;color:#2d3b34}
+.bmi-ranges li.on{background:#e1ebe3;border-color:#285d51;border-width:2px}
+@media (max-width:560px){.bmi-pair{grid-template-columns:1fr}.bmi-input-wrap{max-width:none}.bmi-value{font-size:52px}}

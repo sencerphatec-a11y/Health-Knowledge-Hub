@@ -2,6 +2,7 @@ import {
   questionnaireResources as r,
   type QuestionnaireDefinition, type QuestionnaireId, type QuestionnaireResource,
 } from './questionnaires';
+import { scoreAdditionalQuestionnaire } from './additional-questionnaire-scoring';
 
 export type Answers = Record<string, number>;
 export interface QuestionnaireAction { title: string; body: string; resources: QuestionnaireResource[] }
@@ -15,9 +16,11 @@ export interface QuestionnaireResult {
   resources: QuestionnaireResource[];
   selfHarm: boolean;
   urgentMedical: boolean;
+  subscores?: { label: string; score: number; maxScore: number }[];
 }
 
 export function missingQuestions(def: QuestionnaireDefinition, answers: Answers): string[] {
+  if (def.id === 'auditc' && answers['auditc-1'] === 0) return [];
   return def.questions.filter(q => !q.choices.some(c => c.value === answers[q.id])).map(q => q.id);
 }
 
@@ -53,10 +56,12 @@ export function scoreQuestionnaire(def: QuestionnaireDefinition, answers: Answer
   if (functioning !== undefined && (!Number.isInteger(functioning) || functioning < 0 || functioning > 3)) {
     throw new Error('Choose a valid functioning response or leave the optional question unanswered.');
   }
-  const points = def.questions.map(q => q.choices.find(c => c.value === answers[q.id])!.points);
+  const points = def.questions.map((q, i) => def.id === 'auditc' && answers['auditc-1'] === 0 && i > 0 ? 0 : q.choices.find(c => c.value === answers[q.id])!.points);
   const total = points.reduce((sum, value) => sum + value, 0);
   const flags = urgentFlags(def.id, answers);
   const common = { resources: def.resources, scoreMeaning: def.scoringExplanation, ...flags };
+  const additional = scoreAdditionalQuestionnaire(def, answers, total);
+  if (additional) return { ...common, ...additional };
 
   if (def.id === 'wellbeing') {
     const score = total * 5;

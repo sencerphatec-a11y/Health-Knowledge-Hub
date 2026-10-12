@@ -12,6 +12,10 @@
 .qn-card{text-align:left;display:flex;flex-direction:column;gap:10px;padding:21px;border:1px solid #e4dfd2;border-radius:16px;background:#fbf9f2;cursor:pointer;color:inherit;transition:transform .2s,border-color .2s}
 .qn-card:hover{transform:translateY(-3px);border-color:#bdcfc1}
 .qn-card strong{font-size:26px;font-weight:400;line-height:1.1}
+.qn-resource-card{cursor:default}.qn-resource-card:hover{transform:none}
+.qn-resource-card h3{font-size:26px;font-weight:400;line-height:1.15;margin:0}
+.qn-resource-card .outlink-btn{align-self:flex-start;margin-top:auto}
+.qn-subtotals{display:flex;flex-wrap:wrap;gap:8px 24px}
 .qn-card:focus-visible,.qn-choice:focus-within,.qn-linkbtn:focus-visible,.qn-details summary:focus-visible,.qn-result:focus-visible{outline:3px solid #285d51;outline-offset:3px}
 .qn-linkbtn{background:none;border:0;cursor:pointer;padding:6px 0}
 .qn-toolhead p{max-width:680px;line-height:1.7;font-size:14px;color:#5c6d64}

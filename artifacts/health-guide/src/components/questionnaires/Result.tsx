@@ -12,6 +12,9 @@ export function ResultView({ result, methodology, attribution, onEdit, onClear, 
     <div className="eyebrow">Your reflection summary</div>
     <h2 id="qn-result-h" className="serif" data-testid="text-result-label">{result.label}</h2>
     <p className="qn-score" data-testid="text-result-score">Score {result.score} of {result.maxScore}</p>
+    {result.subscores && <div className="qn-subtotals" aria-label="Symptom subtotals">
+      {result.subscores.map((s) => <p key={s.label} data-testid={`subscore-${s.label.startsWith('Anxiety') ? 'anxiety' : 'depression'}`}><strong>{s.label}:</strong> {s.score} of {s.maxScore}</p>)}
+    </div>}
     <p data-testid="text-result-summary">{result.summary}</p>
     <p>{result.scoreMeaning}</p>
     <h3>How this is scored</h3>

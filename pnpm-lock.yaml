@@ -412,6 +412,9 @@ importers:
       tailwindcss-pulsecare:
         specifier: npm:tailwindcss@3.4.17
         version: tailwindcss@3.4.17
+      tsx:
+        specifier: ^4.23.13
+        version: 4.23.13
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
