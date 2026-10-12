@@ -56,6 +56,18 @@ For one engine, run:
 pnpm --filter @workspace/health-guide run test:medications --project=firefox
 ```
 
+For the focused GoodRx search regression across all three engines, run:
+
+```sh
+pnpm --filter @workspace/health-guide run test:medications goodrx-search.spec.ts
+```
+
+This submits home-page searches for `GoodRx` and `prescription savings`, opens
+the internal educational guide, checks its not-insurance and no-live-prices
+notices, and confirms only explicitly labeled external links open GoodRx in a
+new tab. All three external destinations are intercepted with local responses;
+the test never loads the live commercial site.
+
 ## What is exercised
 
 - Real React UI, generated client, API validation, paging, extraction and error
