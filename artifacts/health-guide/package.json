@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test:questionnaires": "tsx --test src/data/questionnaire-scoring.test.ts src/data/additional-questionnaire-scoring.test.ts src/data/bmi.test.ts",
+    "test:search": "node --test tests/site-search.mjs",
     "test:medications": "pnpm run typecheck:medication-tests && playwright test --config playwright.config.ts",
     "typecheck:medication-tests": "tsc -p tsconfig.browser-tests.json --noEmit",
     "dev": "vite --config vite.config.ts --host 0.0.0.0",

@@ -1,4 +1,12 @@
 export const drugInteractions = {
+  search: {
+    id: 'drug-interactions',
+    href: '/drug-interactions',
+    title: 'Drug Interactions: Medscape resources',
+    category: 'Educational guide · External checker',
+    summary: 'Learn about drug interactions and medication interactions, and how to use Medscape’s external Drug Interaction Checker. This is an educational guide, not a personalized interaction result or safety check. Discuss your medicines with a pharmacist or clinician.',
+    keywords: ['Medscape', 'drug interactions', 'medication interactions', 'drug interaction checker', 'medicine interactions'],
+  },
   checked: 'October 11, 2026',
   checkerUrl: 'https://reference.medscape.com/drug-interactionchecker',
   summary: 'Medscape’s Drug Interaction Checker lets you look up potential interactions among prescription medicines, over-the-counter products, and herbal supplements. Its reference information describes interaction mechanisms and clinical action categories, and may include common food interactions. Use it to prepare questions for your pharmacist or clinician—not to decide on treatment yourself.',

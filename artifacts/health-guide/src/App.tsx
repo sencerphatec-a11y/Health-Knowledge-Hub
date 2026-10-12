@@ -19,6 +19,7 @@ import BlogPage, { BlogPostPage } from './pages/BlogPage';
 import { getCommunityPost } from './data/community-blog';
 import { entries, getEntry, getSource, sources, type Kind, type LibraryEntry } from './data';
 import { articleSelectionChecked, recentArticleCount, formatArticleDate } from './data/recent-articles';
+import { searchSite } from './data/site-search';
 import './article-library.css';
 
 const navItems = [
@@ -123,7 +124,7 @@ function usePageMetadata() {
     } else if (pathname === '/search') {
       title = query ? `Results for ${query} | Health Guide` : 'Search health information | Health Guide';
       description = query
-        ? `Search results for ${query} across Health Guide articles, conditions, and medication references.`
+        ? `Search results for ${query} across Health Guide articles, conditions, medication references, and educational resource guides.`
         : 'Search evidence-based articles, condition guides, medication information, and trusted medical sources.';
     } else if (pathname !== '/') {
       title = 'Page not found | Health Guide';
@@ -565,36 +566,29 @@ function Detail({ collection, id }: { collection: string; id: string }) {
 function SearchResults() {
   const [, setLocation] = useLocation();
   const query = new URLSearchParams(useSearch()).get('q')?.trim() || '';
-  const normalizedQuery = query.toLowerCase();
-  const results = entries.filter((entry) => {
-    const sourcesForEntry = entry.sourceIds.map((sourceId) => {
-      const source = getSource(sourceId);
-      return source ? `${source.title} ${source.organization}` : '';
-    }).join(' ');
-    const searchableText = [
-      entry.title,
-      entry.category,
-      entry.summary,
-      ...entry.sections.flatMap((section) => [section.heading, ...section.paragraphs, ...(section.points || [])]),
-      sourcesForEntry,
-    ].join(' ').toLowerCase();
-    return !normalizedQuery || searchableText.includes(normalizedQuery);
-  });
+  const { libraryResults, guideResults, count } = searchSite(query);
   const submitSearch = (value: string) => setLocation(value ? `/search?q=${encodeURIComponent(value)}` : '/search');
 
   return <main className="shell">
     <div className="page-heading animate-arrive">
       <div className="eyebrow">The library / search</div>
       <h1 className="serif">{query ? `Results for “${query}”` : 'Search the health library.'}</h1>
-      <p>Search across articles, condition guides, medicines, and their source information.</p>
+      <p>Search across articles, condition guides, medicines, educational resource guides, and their source information.</p>
     </div>
     <div className="library-controls">
       <SearchField initial={query} onSearch={submitSearch} />
     </div>
     <p className="result-count" aria-live="polite" data-testid="text-search-result-count">
-      {results.length} {results.length === 1 ? 'guide' : 'guides'} found
+      {count} {count === 1 ? 'guide' : 'guides'} found
     </p>
-    {results.length ? <div className="listing-grid">{results.map((entry) => <EntryCard key={entry.id} entry={entry} />)}</div> : <div className="empty-state" data-testid="empty-global-search">
+    {count ? <div className="listing-grid">
+      {guideResults.map((guide) => <Link key={guide.id} href={guide.href} className="listing-card" data-testid={`card-guide-${guide.id}`}>
+        <div className="card-meta"><span>{guide.category}</span><span className="card-icon"><BookOpen size={16} aria-hidden="true" /></span></div>
+        <h2>{guide.title}</h2><p>{guide.summary}</p>
+        <div className="card-bottom"><span>Read the educational guide</span><ArrowUpRight size={15} /></div>
+      </Link>)}
+      {libraryResults.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
+    </div> : <div className="empty-state" data-testid="empty-global-search">
       <Search size={25} /><h2>No guides found</h2><p>Try another word, or explore a library below.</p>
       <div className="hero-actions">
         <Link href="/articles" className="text-link">Articles</Link>

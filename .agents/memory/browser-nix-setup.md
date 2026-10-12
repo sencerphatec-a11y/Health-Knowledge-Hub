@@ -14,3 +14,9 @@ Playwright's Ubuntu host dependency probe can report libraries as missing even w
 **Why:** Its dynamic-load check consults the system ldconfig cache, not the Nix library paths.
 
 **How to apply:** A documented bypass of this static probe is acceptable only with a configured Nix library stack; actual browser launches and assertions must still run and fail normally. Never skip an engine as a substitute for working browser setup.
+
+Run the medication browser suite exclusively, not simultaneously as a workflow and a completion check.
+
+**Why:** Its isolated servers deliberately refuse to reuse occupied ports. An existing workflow can therefore prevent the completion check from starting even when the application is healthy.
+
+**How to apply:** Check whether a browser-test workflow is already running before completion validation. Let it finish or stop the conflicting run before invoking the configured check; do not weaken server isolation to work around the conflict.

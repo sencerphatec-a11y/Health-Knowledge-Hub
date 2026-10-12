@@ -1,6 +1,11 @@
 import { conditionEntries, conditionSources } from './data/conditions';
 import { resourceSources } from './data/support-resources';
 import { recentArticleEntries, recentArticleSources } from './data/recent-articles';
+import { drugInteractions } from './data/drug-interactions';
+
+// Standalone guides are searchable without adding them to article, condition,
+// or medication collections, whose entries use different detail routes.
+export const searchableGuides = [drugInteractions.search];
 
 export type Kind = 'Article' | 'Condition' | 'Medication';
 
