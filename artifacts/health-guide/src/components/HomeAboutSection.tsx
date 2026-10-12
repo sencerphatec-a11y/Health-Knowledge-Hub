@@ -26,5 +26,38 @@ export default function HomeAboutSection() {
       </div>
     </div>
     <Link href="/resources" className="text-link">Browse resources <ArrowRight size={15} /></Link>
+    <div className="ap-credit" data-testid="site-creator-record">
+          <div className="ap-credit-heading">
+            <div>
+              <div className="eyebrow">The story behind the site</div>
+              <h3>Built and published by Phil.</h3>
+              <p>Health Guide was created as an independent, source-linked place to make useful health and community information easier to find.</p>
+            </div>
+            <span className="ap-credit-badge">Independent project</span>
+          </div>
+          <dl className="ap-credit-facts">
+            <div className="ap-credit-fact">
+              <dt>Tracked workdays</dt>
+              <dd>4 days</dd>
+              <p>October 9–12, 2026</p>
+            </div>
+            <div className="ap-credit-fact">
+              <dt>First published</dt>
+              <dd><time dateTime="2026-10-09">October 9, 2026</time></dd>
+              <p>First recorded publication</p>
+            </div>
+            <div className="ap-credit-fact">
+              <dt>Latest publication</dt>
+              <dd><time dateTime="2026-10-12">October 12, 2026</time></dd>
+              <p>Latest recorded publication</p>
+            </div>
+          </dl>
+          <div className="ap-credit-links">
+            <a href="https://github.com/sencerphatec-a11y/Health-Knowledge-Hub/commits/main" target="_blank" rel="noreferrer">View project history <ArrowRight size={14} /></a>
+            <a href="https://github.com/sencerphatec-a11y/Health-Knowledge-Hub/commit/70a1ba91b7c1bcc5ab397ce420f45e77444ee4a6" target="_blank" rel="noreferrer">View first publish record <ArrowRight size={14} /></a>
+            <a href="https://github.com/sencerphatec-a11y/Health-Knowledge-Hub/commit/f4aebeb918dd94cb85562e887bc661cdecfbe4a4" target="_blank" rel="noreferrer">View latest publish record <ArrowRight size={14} /></a>
+          </div>
+          <p className="ap-credit-note">Workdays count distinct dates with GitHub commits authored as <code>philstaver</code>. This shows recorded activity, not hours worked.</p>
+        </div>
   </section>;
 }
