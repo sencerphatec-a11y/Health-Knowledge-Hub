@@ -115,8 +115,8 @@ function usePageMetadata() {
       title = 'GoodRx prescription coupons explained | Health Guide';
       description = 'Learn how the GoodRx commercial coupon service works. GoodRx is not insurance, and savings are not guaranteed.';
     } else if (pathname === '/drug-interactions') {
-      title = 'Drug interactions & Drugs.com resources | Health Guide';
-      description = 'Learn about Drugs.com’s interaction checker, interaction ratings, and medicine, food, alcohol, and supplement precautions, with links to the original resources.';
+      title = 'Drug interactions & Medscape resources | Health Guide';
+      description = 'Learn about Medscape’s Drug Interaction Checker, clinical action categories, and questions for your pharmacist, with links to Medscape’s original resources.';
     } else if (pathname === '/sources') {
       title = 'Health Guide sources & citations | MedlinePlus, CDC, FDA';
       description = 'See the original public-health and medicine sources behind Health Guide articles, condition pages, and medication guides.';
@@ -617,7 +617,7 @@ function SourcesPage() {
         return <article className="source-directory-card" key={source.id} data-testid={`source-row-${source.id}`}>
           <div><h2>{source.title}</h2><p>{source.organization} · {source.description}</p></div>
           <a className="button-primary" style={{ padding: '10px 14px', fontSize: 11 }} href={source.url} target="_blank" rel="noreferrer">Visit original <ExternalLink size={13} /></a>
-          <div className="source-tags" aria-label="Guides citing this source">{source.id === 'dailymed' && <Link href="/medications">Browse medication labels</Link>}{source.id === 'drugs-com' && <Link href="/drug-interactions">Drug interaction resources</Link>}{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
+          <div className="source-tags" aria-label="Guides citing this source">{source.id === 'dailymed' && <Link href="/medications">Browse medication labels</Link>}{source.id === 'medscape' && <Link href="/drug-interactions">Drug interaction resources</Link>}{topics.map((entry) => <Link key={entry.id} href={entryHref(entry)}>{entry.title}</Link>)}</div>
         </article>;
       })}
     </div>

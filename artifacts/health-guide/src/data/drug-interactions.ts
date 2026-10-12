@@ -1,15 +1,15 @@
 export const drugInteractions = {
   checked: 'October 11, 2026',
-  checkerUrl: 'https://www.drugs.com/drug_interactions.html',
-  summary: 'Drugs.com offers an external interaction checker and educational guides about how medicines can interact with other medicines, food, alcohol, supplements, and health conditions. Use these resources to prepare questions for your pharmacist or clinician—not to decide on treatment yourself.',
+  checkerUrl: 'https://reference.medscape.com/drug-interactionchecker',
+  summary: 'Medscape’s Drug Interaction Checker lets you look up potential interactions among prescription medicines, over-the-counter products, and herbal supplements. Its reference information describes interaction mechanisms and clinical action categories, and may include common food interactions. Use it to prepare questions for your pharmacist or clinician—not to decide on treatment yourself.',
   steps: [
     {
       title: 'Prepare your complete medication list',
       text: 'Include prescription and over-the-counter medicines, vitamins, herbs, and supplements. Keep the exact product names, strengths, and how often you take them available for your healthcare team.',
     },
     {
-      title: 'Open the Drugs.com checker',
-      text: 'Enter medicine names on Drugs.com and select the matching products. Add the medicines and any supplements the tool recognizes, then review its interaction results and available food, alcohol, and condition warnings. Ask a pharmacist about anything you cannot find.',
+      title: 'Open the Medscape checker',
+      text: 'Search for each medicine on Medscape and select the matching result. Add prescription medicines, over-the-counter medicines, and herbal supplements that the checker recognizes, then review the interaction details. Ask a pharmacist about anything you cannot find. Medscape is geared toward healthcare professionals; if prompted to sign in or register, follow the instructions on its site.',
     },
     {
       title: 'Discuss the results before making changes',
@@ -17,15 +17,13 @@ export const drugInteractions = {
     },
   ],
   ratings: [
-    { name: 'Major', meaning: 'Signals a potentially highly significant interaction. A clinician or pharmacist should assess the combination and explain what action is appropriate.' },
-    { name: 'Moderate', meaning: 'Signals a potentially significant interaction that may require avoiding the combination, closer monitoring, or professional management.' },
-    { name: 'Minor', meaning: 'Generally indicates a less significant interaction, but it can still matter for an individual’s treatment or side effects.' },
-    { name: 'Unknown', meaning: 'Interaction information is limited or unavailable. This is not confirmation that the combination is safe.' },
+    { name: 'Contraindicated', meaning: 'Medscape indicates that the risks of using the medicines together outweigh the benefits. Ask your clinician or pharmacist promptly about the appropriate next step; do not change treatment on your own.' },
+    { name: 'Serious – Use Alternative', meaning: 'Medscape advises clinicians to avoid the combination or consider an alternative. If the combination is unavoidable, professional management or dose changes may be needed.' },
+    { name: 'Monitor Closely', meaning: 'Medscape advises monitoring for increased effects, adverse effects, or reduced effectiveness. Results may also label this category “Significant – Monitor Closely.” Your healthcare team determines what monitoring you need.' },
+    { name: 'Minor', meaning: 'Medscape describes interactions without clinically meaningful differences or with unknown effects. This does not guarantee safety for an individual, especially when information is limited.' },
   ],
   links: [
-    { label: 'Open Drugs.com Interaction Checker', url: 'https://www.drugs.com/drug_interactions.html' },
-    { label: 'Medicine and alcohol information', url: 'https://www.drugs.com/article/medications-and-alcohol.html' },
-    { label: 'Grapefruit and medicine information', url: 'https://www.drugs.com/article/grapefruit-drug-interactions.html' },
-    { label: 'Visit Drugs.com', url: 'https://www.drugs.com/' },
+    { label: 'Open Medscape Interaction Checker', url: 'https://reference.medscape.com/drug-interactionchecker' },
+    { label: 'Medscape Tools & Reference', url: 'https://reference.medscape.com/' },
   ],
 };

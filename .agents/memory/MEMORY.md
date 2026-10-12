@@ -11,3 +11,4 @@
 - [Cross-browser Nix setup](browser-nix-setup.md) — use a coherent browser library/graphics stack; ambient Replit Mesa settings can break headless WebKit.
 - [Release source verification](release-source-verification.md) — recheck fresh builds after Git sync; a healthy preview may still be serving an older bundle.
 - [External hosting scope](external-hosting.md) — the user also deploys this website on Render through GitHub; keep Render fixes separate from Replit publishing.
+- [Interaction source authority](interaction-source-authority.md) — verify category definitions against the chosen checker; severity labels are not interchangeable across providers.

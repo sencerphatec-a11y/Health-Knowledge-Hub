@@ -62,6 +62,14 @@ test("Render production command serves the website and API on one port", { timeo
     assert.equal(asset.status, 200);
     assert.match(asset.headers.get("content-type"), /javascript/);
     assert.match(asset.headers.get("cache-control"), /immutable/);
+    const javascript = await asset.text();
+    assert.ok(javascript.includes("https://reference.medscape.com/drug-interactionchecker"),
+      "The Render website must include the Medscape checker link");
+    assert.doesNotMatch(javascript, /drugs\.com|drugs-com/i,
+      "The Render website must not retain the replaced interaction provider");
+    for (const category of ["Contraindicated", "Serious", "Monitor Closely", "Minor"]) {
+      assert.ok(javascript.includes(category), `Missing Medscape category: ${category}`);
+    }
     for (const route of ["/api/not-a-route", "/assets/not-a-file.js", "/not-a-file.css"]) {
       const res = await get(route);
       assert.equal(res.status, 404, route);

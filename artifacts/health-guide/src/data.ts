@@ -46,7 +46,7 @@ export const sources: Source[] = [
   { id: 'cdc-antibiotic', title: 'Antibiotic Prescribing and Use', organization: 'Centers for Disease Control and Prevention (CDC)', url: 'https://www.cdc.gov/antibiotic-use/', description: 'CDC information on appropriate antibiotic use.' },
   { id: 'fda-label', title: 'The Over-the-Counter Drug Facts Label', organization: 'U.S. Food and Drug Administration (FDA)', url: 'https://www.fda.gov/drugs/understanding-over-counter-medicines/over-counter-drug-facts-label', description: 'How to find and understand key information on OTC medicine labels.' },
   { id: 'dailymed', title: 'DailyMed', organization: 'U.S. National Library of Medicine', url: 'https://dailymed.nlm.nih.gov/dailymed/', description: 'Current drug labeling submitted to the U.S. Food and Drug Administration, including human prescription and over-the-counter product labels.' },
-  { id: 'drugs-com', title: 'Drug Interaction Checker & FAQs', organization: 'Drugs.com (commercial health-information publisher)', url: 'https://www.drugs.com/drug_interactions.html', description: 'External interaction checker and educational explanations of interaction types, severity ratings, and questions to discuss with a pharmacist or clinician.' },
+  { id: 'medscape', title: 'Drug Interaction Checker & Category Definitions', organization: 'Medscape (medical-information publisher)', url: 'https://reference.medscape.com/drug-interactionchecker', description: 'External interaction checker for prescription medicines, OTC products, and herbal supplements, with mechanisms and clinical action categories to discuss with a pharmacist or clinician.' },
 ];
 
 export const entries: LibraryEntry[] = [
