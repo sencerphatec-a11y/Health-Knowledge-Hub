@@ -59,3 +59,19 @@
   .ap-form { padding: 14px; } .ap-field, .ap-field.grow { flex: 1 1 100%; } .ap-go { width: 100%; }
   .ap-card { padding: 18px; }
 }
+
+.ap-credit { margin: 28px 0 18px; padding: clamp(20px, 3vw, 30px); border: 1px solid #dce4d9; border-radius: 18px; background: linear-gradient(135deg, #f7f8f1, #f1f5ef); }
+.ap-credit-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.ap-credit-heading h3 { margin: 5px 0 8px; color: #244d41; font-size: clamp(21px, 3vw, 27px); }
+.ap-credit-heading p { max-width: 620px; margin: 0; color: #5e675f; font-size: 14px; line-height: 1.7; }
+.ap-credit-badge { flex: none; border: 1px solid #c8d6cc; border-radius: 999px; padding: 7px 11px; color: #315749; background: #fff; font-size: 12px; }
+.ap-credit-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 16px; padding: 0; }
+.ap-credit-fact { min-width: 0; padding: 14px; border: 1px solid #e4dfd2; border-radius: 12px; background: rgba(255, 255, 255, .78); }
+.ap-credit-fact dt { color: #69736b; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.ap-credit-fact dd { margin: 6px 0 0; color: #244d41; font-size: 17px; font-weight: 650; }
+.ap-credit-fact .ap-credit-detail { margin: 4px 0 0; color: #69736b; font-size: 12px; line-height: 1.5; }
+.ap-credit-links { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.ap-credit-links a { display: inline-flex; align-items: center; gap: 6px; color: #285d51; font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.ap-credit-note { margin: 14px 0 0; color: #69736b; font-size: 12px; line-height: 1.5; }
+.ap-credit-note code { color: #435b4b; }
+@media (max-width: 760px) { .ap-credit-heading { flex-direction: column; gap: 12px; } .ap-credit-facts { grid-template-columns: 1fr; } .ap-credit-links { flex-direction: column; align-items: flex-start; } }
