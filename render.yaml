@@ -1,0 +1,9 @@
+# For an existing manually configured service, copy these commands into Settings.
+# Adding this file alone does not change an existing service's commands.
+services:
+  - type: web
+    name: health-knowledge-hub
+    runtime: node
+    buildCommand: pnpm install --frozen-lockfile --prod=false && pnpm run build:render
+    startCommand: pnpm run start:render
+    healthCheckPath: /api/healthz

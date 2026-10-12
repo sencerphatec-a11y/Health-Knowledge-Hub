@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { serveHealthGuide } from "./lib/serve-health-guide";
 
 const app: Express = express();
 
@@ -30,5 +31,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Render hosts both parts on one port; Replit keeps its existing service routing.
+if (process.env.SERVE_HEALTH_GUIDE === "true") {
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "API route not found" });
+  });
+  serveHealthGuide(app);
+}
 
 export default app;

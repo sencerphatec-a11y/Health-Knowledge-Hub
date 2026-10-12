@@ -6,6 +6,9 @@
     "test:security": "node --test scripts/security-dependencies.test.cjs",
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build:render": "node scripts/render.mjs build",
+    "start:render": "node scripts/render.mjs start",
+    "test:render": "node --test scripts/render.test.mjs",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "start": "pnpm -r --filter \"*\" --if-present run start"
