@@ -13,6 +13,19 @@ tags:
   - name: medications
     description: Current U.S. human medication labels from DailyMed
 paths:
+  /:
+    get:
+      operationId: getApiStatus
+      tags: [health]
+      summary: API status message
+      responses:
+        "200":
+          description: The API server is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                enum: ["Health Knowledge Hub API is running!"]
   /doctors:
     get:
       operationId: searchDoctors

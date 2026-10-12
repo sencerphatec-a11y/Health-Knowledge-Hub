@@ -8,6 +8,7 @@
 
 export * from './apiError';
 export * from './doctorSearchPage';
+export * from './getApiStatus200';
 export * from './getMedicationLabelsParams';
 export * from './healthStatus';
 export * from './medicationCatalogPage';

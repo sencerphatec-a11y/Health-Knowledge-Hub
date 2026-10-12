@@ -18,6 +18,7 @@ import type {
 import type {
   ApiError,
   DoctorSearchPage,
+  GetApiStatus200,
   GetMedicationLabelsParams,
   HealthStatus,
   MedicationCatalogPage,
@@ -51,6 +52,83 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetApiStatusUrl = () => {
+
+
+
+
+  return `/api/`
+}
+
+/**
+ * @summary API status message
+ */
+export const getApiStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<GetApiStatus200> => {
+
+  return customFetch<GetApiStatus200>(getGetApiStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetApiStatusQueryKey = () => {
+    return [
+    `/api/`
+    ] as const;
+    }
+
+
+export const getGetApiStatusQueryOptions = <TData = Awaited<ReturnType<typeof getApiStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiStatus>>> = ({ signal }) => getApiStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetApiStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getApiStatus>>>
+export type GetApiStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary API status message
+ */
+
+export function useGetApiStatus<TData = Awaited<ReturnType<typeof getApiStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetApiStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getSearchDoctorsUrl = (params?: SearchDoctorsParams,) => {
   const normalizedParams = new URLSearchParams();

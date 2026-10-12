@@ -9,6 +9,12 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary API status message
+ */
+export const GetApiStatusResponse = zod.string()
+
+
+/**
  * Searches public CMS NPPES records. Only active physician records with matching U.S. practice locations are shown. Listings do not verify licensing, insurance, availability, or quality.
  * @summary Find physician practice listings by city/state or ZIP code
  */

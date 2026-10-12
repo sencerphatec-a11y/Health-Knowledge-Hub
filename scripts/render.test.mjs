@@ -40,6 +40,12 @@ test("Render production command serves the website and API on one port", { timeo
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     assert.ok(ready, `Production server did not become healthy:\n${output}`);
+    for (const route of ["/api", "/api/"]) {
+      const status = await get(route);
+      assert.equal(status.status, 200, route);
+      assert.match(status.headers.get("content-type"), /text\/plain/);
+      assert.equal(await status.text(), "Health Knowledge Hub API is running!");
+    }
     const home = await get("/");
     assert.equal(home.status, 200);
     const html = await home.text();

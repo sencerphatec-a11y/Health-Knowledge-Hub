@@ -103,6 +103,13 @@ export interface ApiError {
   message: string;
 }
 
+export type GetApiStatus200 = typeof GetApiStatus200[keyof typeof GetApiStatus200];
+
+
+export const GetApiStatus200 = {
+  'Health_Knowledge_Hub_API_is_running!': 'Health Knowledge Hub API is running!',
+} as const;
+
 export type SearchDoctorsParams = {
 /**
  * @minLength 1
