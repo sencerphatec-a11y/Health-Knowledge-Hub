@@ -1,4 +1,11 @@
 import { entries, getSource, searchableGuides } from '../data';
+import type { SearchableGuide } from '../data';
+
+function guideMatchesQuery(guide: SearchableGuide, normalizedQuery: string) {
+  const searchableText = [guide.title, guide.category, guide.summary, ...guide.keywords]
+    .join(' ').toLowerCase();
+  return !normalizedQuery || searchableText.includes(normalizedQuery);
+}
 
 export function searchSite(query: string) {
   const normalizedQuery = query.trim().toLowerCase();
@@ -16,9 +23,6 @@ export function searchSite(query: string) {
     ].join(' ').toLowerCase();
     return !normalizedQuery || searchableText.includes(normalizedQuery);
   });
-  const guideResults = searchableGuides.filter((guide) =>
-    !normalizedQuery || [guide.title, guide.category, guide.summary, ...guide.keywords]
-      .join(' ').toLowerCase().includes(normalizedQuery),
-  );
+  const guideResults = searchableGuides.filter((guide) => guideMatchesQuery(guide, normalizedQuery));
   return { libraryResults, guideResults, count: libraryResults.length + guideResults.length };
 }

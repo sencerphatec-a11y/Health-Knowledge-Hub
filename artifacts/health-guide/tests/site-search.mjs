@@ -59,8 +59,41 @@ test('article, condition, medication, and source matches preserve existing resul
   }
 });
 
-test('empty queries include the guide once, while unrelated queries keep the empty state', () => {
-  assert.equal(searchSite('').count, entries.length + 1);
-  assert.equal(searchSite('   ').guideResults.length, 1);
+test('vaccine queries find the educational guide and its current route', () => {
+  for (const query of ['vaccines', 'vaccination schedules', 'immunization', 'CDC', 'VIS', 'vaccine fact sheets', '  VACCINES  ']) {
+    const result = searchSite(query);
+    const guides = result.guideResults.filter((guide) => guide.id === 'vaccines');
+    assert.equal(guides.length, 1, query);
+    assert.equal(guides[0].href, '/vaccines');
+    assert.match(guides[0].category, /Educational guide.*Official vaccine resources/);
+    assert.match(guides[0].summary, /not a complete or personalized vaccination recommendation/);
+    assert.equal(result.count, result.libraryResults.length + result.guideResults.length);
+  }
+});
+
+test('savings queries find the local GoodRx explanation, not an external coupon service', () => {
+  for (const query of ['GoodRx', 'good rx', 'prescription savings', 'prescription coupons', 'prescription discounts', 'drug prices', '  GOODRX  ']) {
+    const result = searchSite(query);
+    const guides = result.guideResults.filter((guide) => guide.id === 'goodrx');
+    assert.equal(guides.length, 1, query);
+    assert.equal(guides[0].href, '/goodrx');
+    assert.match(guides[0].category, /Educational guide.*External commercial service/);
+    assert.match(guides[0].summary, /GoodRx is not insurance/);
+    assert.match(guides[0].summary, /no live prices or coupons and cannot promise savings/);
+    assert.equal(result.count, result.libraryResults.length + result.guideResults.length);
+  }
+});
+
+test('new guide queries preserve library matches and ordering', () => {
+  for (const query of ['vaccines', 'CDC', 'FDA', 'GoodRx', 'insurance', 'prescription coupons']) {
+    assert.deepEqual(searchSite(query).libraryResults, previousLibrarySearch(query), query);
+  }
+});
+
+test('empty queries include each guide once, while unrelated queries keep the empty state', () => {
+  assert.equal(searchSite('').count, entries.length + 3);
+  assert.deepEqual(searchSite('   ').guideResults.map((guide) => guide.href), [
+    '/drug-interactions', '/vaccines', '/goodrx',
+  ]);
   assert.deepEqual(searchSite('zz-no-health-guide-match-zz'), { libraryResults: [], guideResults: [], count: 0 });
 });

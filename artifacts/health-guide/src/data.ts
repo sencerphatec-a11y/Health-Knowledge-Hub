@@ -5,7 +5,34 @@ import { drugInteractions } from './data/drug-interactions';
 
 // Standalone guides are searchable without adding them to article, condition,
 // or medication collections, whose entries use different detail routes.
-export const searchableGuides = [drugInteractions.search];
+export interface SearchableGuide {
+  id: string;
+  href: string;
+  title: string;
+  category: string;
+  summary: string;
+  keywords: string[];
+}
+
+export const searchableGuides: SearchableGuide[] = [
+  drugInteractions.search,
+  {
+    id: 'vaccines',
+    href: '/vaccines',
+    title: 'Vaccines: schedules and fact sheets',
+    category: 'Educational guide · Official vaccine resources',
+    summary: 'Explore vaccination schedules and plain-language vaccine fact sheets from CDC Vaccine Information Statements (VIS), with FDA licensed-vaccine information for products without a CDC VIS. This educational overview is not a complete or personalized vaccination recommendation.',
+    keywords: ['vaccine', 'vaccines', 'vaccination', 'immunization', 'immunizations', 'vaccination schedules', 'vaccine schedules', 'vaccine fact sheets', 'CDC', 'Vaccine Information Statements', 'VIS', 'FDA', 'children', 'adults', 'pregnancy', 'vaccine safety', 'side effects'],
+  },
+  {
+    id: 'goodrx',
+    href: '/goodrx',
+    title: 'GoodRx: prescription coupons explained',
+    category: 'Educational guide · External commercial service',
+    summary: 'Learn how GoodRx’s external commercial prescription price-comparison and coupon service works, and what to ask your pharmacist when comparing with insurance. GoodRx is not insurance. Health Guide shows no live prices or coupons and cannot promise savings.',
+    keywords: ['GoodRx', 'Good Rx', 'prescription savings', 'prescription coupons', 'prescription discounts', 'medication savings', 'drug prices', 'pharmacy prices', 'discount coupons', 'insurance'],
+  },
+];
 
 export type Kind = 'Article' | 'Condition' | 'Medication';
 
