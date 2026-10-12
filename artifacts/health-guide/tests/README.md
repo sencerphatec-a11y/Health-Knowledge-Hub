@@ -68,6 +68,17 @@ notices, and confirms only explicitly labeled external links open GoodRx in a
 new tab. All three external destinations are intercepted with local responses;
 the test never loads the live commercial site.
 
+For the focused vaccine search regression across all three engines, run:
+
+```sh
+pnpm --filter @workspace/health-guide run test:medications vaccine-search.spec.ts
+```
+
+This submits global home-page searches for `vaccines` and `immunization`, clicks
+the vaccine guide result, and confirms `/vaccines` renders its schedule table
+and searchable fact-sheet records. It uses the real frontend navigation without
+depending on live CDC or FDA requests.
+
 ## What is exercised
 
 - Real React UI, generated client, API validation, paging, extraction and error
